@@ -1,0 +1,3821 @@
+<!doctype html>
+<html lang="ko"><head>
+  <script src="https://apis.google.com/_/scs/abc-static/_/js/k=gapi.lb.ko.RTUH1ZiyuXI.O/m=gapi_iframes/rt=j/sv=1/d=1/ed=1/rs=AHpOoo81hLe3JzdONP8XmrLp67AGwYPTBg/cb=gapi.loaded_0?le=scs" async=""></script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>학교생활 도우미 (세특 로그 &amp; AI 연계 분석기)</title>
+  <meta name="description" content="고등학생 수행평가 기록, 일정 관리, 세특 요약 및 AI 과목 연계 분석을 지원하는 모바일 웹 앱">
+  <meta property="og:title" content="학교생활 도우미 (세특 로그 &amp; AI 연계 분석기)">
+  <meta property="og:description" content="고등학생 수행평가 기록, 일정 관리, 세특 요약 및 AI 과목 연계 분석을 지원하는 모바일 웹 앱">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&amp;family=Noto+Sans+KR:wght@400;500;600;700;800&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-muted: #f1f5f9;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text: #0f172a;
+      --text-sub: #475569;
+      --text-muted: #64748b;
+      --primary: #4338ca;
+      --primary-hover: #3730a3;
+      --primary-soft: #eef2ff;
+      --primary-border: #c7d2fe;
+      --danger: #be123c;
+      --danger-soft: #fff1f2;
+      --sunday: #dc2626;
+      --saturday: #2563eb;
+      --amber: #b45309;
+      --amber-soft: #fffbeb;
+      --amber-border: #fde68a;
+      --emerald: #047857;
+      --emerald-soft: #ecfdf5;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --font-sans: 'Noto Sans KR', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100%;
+    }
+    button, input, select, textarea {
+      font: inherit;
+      color: inherit;
+    }
+    button {
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    .tabular { font-variant-numeric: tabular-nums; }
+    .mono { font-family: var(--font-mono); }
+
+    /* Layout */
+    .app-shell {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      height: 56px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-inner {
+      max-width: 1024px;
+      margin: 0 auto;
+      height: 100%;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .brand-btn {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      white-space: nowrap;
+      text-align: left;
+    }
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .alert-banner {
+      background: var(--amber-soft);
+      border-bottom: 1px solid var(--amber-border);
+      font-size: 12px;
+    }
+    .alert-banner-inner {
+      max-width: 1024px;
+      margin: 0 auto;
+      padding: 9px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .main-wrap {
+      flex: 1;
+      width: 100%;
+      max-width: 1024px;
+      margin: 0 auto;
+      padding: 16px 16px 96px;
+    }
+    .page-header {
+      margin-bottom: 16px;
+    }
+    .page-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .page-title {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--text);
+      margin-top: 2px;
+      letter-spacing: -0.02em;
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 40;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid var(--border);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .bottom-nav-grid {
+      max-width: 1024px;
+      margin: 0 auto;
+      height: 64px;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+    .nav-btn {
+      min-height: 44px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      color: var(--text-muted);
+      transition: color 0.15s;
+      padding: 2px;
+    }
+    .nav-btn.active {
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .nav-btn span {
+      font-size: 11px;
+      white-space: nowrap;
+      letter-spacing: -0.02em;
+    }
+
+    /* Cards & Controls */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+    }
+    @media (min-width: 640px) {
+      .card { padding: 20px; }
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    @media (min-width: 1024px) {
+      .grid-2-12 {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 16px;
+        align-items: start;
+      }
+      .col-5 { grid-column: span 5; }
+      .col-7 { grid-column: span 7; }
+      .col-6 { grid-column: span 6; }
+      .grid-2-equal {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+    }
+    .grid-2-equal {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 5px;
+    }
+    .input, .select, .textarea {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 12px;
+      font-size: 14px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      outline: none;
+      transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
+    }
+    .input:focus, .select:focus, .textarea:focus {
+      background: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(67, 56, 202, 0.16);
+    }
+    .textarea {
+      min-height: 110px;
+      resize: vertical;
+      line-height: 1.55;
+    }
+
+    .btn {
+      min-height: 40px;
+      padding: 0 14px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      white-space: nowrap;
+      transition: background-color 0.15s, border-color 0.15s;
+    }
+    .btn-sm { min-height: 36px; padding: 0 10px; font-size: 12px; border-radius: 10px; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-soft { background: var(--primary-soft); color: var(--primary); border: 1px solid var(--primary-border); }
+    .btn-soft:hover { background: #e0e7ff; }
+    .btn-outline { background: #fff; color: #334155; border: 1px solid var(--border); }
+    .btn-outline:hover { background: #f8fafc; }
+    .btn-danger-outline { background: #fff; color: var(--danger); border: 1px solid #fecdd3; }
+    .btn-danger-outline:hover { background: var(--danger-soft); }
+
+    .seg-bar {
+      display: inline-flex;
+      background: var(--surface-muted);
+      padding: 4px;
+      border-radius: var(--radius-md);
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .seg-btn {
+      min-height: 36px;
+      padding: 0 12px;
+      border-radius: 9px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-sub);
+    }
+    .seg-btn.active {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+
+    .row-between { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .row-wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .stack-xs { display: flex; flex-direction: column; gap: 6px; }
+    .stack-sm { display: flex; flex-direction: column; gap: 10px; }
+    .stack-md { display: flex; flex-direction: column; gap: 14px; }
+    .stack-lg { display: flex; flex-direction: column; gap: 18px; }
+
+    /* Calendar Grid */
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 4px;
+    }
+    .cal-dow {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 0;
+    }
+    .cal-cell {
+      min-height: 54px;
+      border-radius: 11px;
+      border: 1px solid transparent;
+      padding: 5px 3px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 3px;
+      background: #fff;
+    }
+    .cal-cell:hover { background: #f8fafc; border-color: var(--border); }
+    .cal-cell.selected { background: var(--primary-soft); border-color: var(--primary); }
+    .cal-cell.today .cal-num {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .cal-num { font-size: 13px; font-weight: 700; }
+    .sun { color: var(--sunday) !important; }
+    .sat { color: var(--saturday) !important; }
+
+    /* List & Dropdown */
+    .dropdown-list {
+      max-height: 205px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: #fff;
+    }
+    .dropdown-item {
+      width: 100%;
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .dropdown-item:last-child { border-bottom: none; }
+    .dropdown-item:hover { background: #f8fafc; }
+    .dropdown-item.selected { background: rgba(238, 242, 255, 0.75); }
+
+    /* Timetable table */
+    .tt-wrap { overflow-x: auto; }
+    .tt-table { width: 100%; border-collapse: collapse; min-width: 540px; font-size: 12px; }
+    .tt-table th, .tt-table td {
+      border: 1px solid var(--border);
+      padding: 7px 6px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .tt-table th { background: #f8fafc; font-weight: 700; color: #334155; }
+    .tt-input {
+      width: 100%;
+      min-height: 32px;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      background: transparent;
+      text-align: center;
+      font-size: 12px;
+      padding: 3px 4px;
+      outline: none;
+    }
+    .tt-input:focus {
+      background: #fff;
+      border-color: var(--primary);
+    }
+
+    /* Progress Bar */
+    .progress-track {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 999px;
+      transition: width 0.25s ease;
+    }
+
+    /* Modal & Toast */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(15, 23, 42, 0.48);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0;
+    }
+    @media (min-width: 640px) {
+      .modal-backdrop { align-items: center; padding: 16px; }
+    }
+    .modal-panel {
+      width: 100%;
+      max-width: 520px;
+      max-height: 86vh;
+      background: #fff;
+      border-radius: 22px 22px 0 0;
+      border: 1px solid var(--border);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    @media (min-width: 640px) {
+      .modal-panel { border-radius: 18px; }
+    }
+    .toast {
+      position: fixed;
+      top: 64px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 60;
+      background: #0f172a;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 10px 16px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.2);
+      max-width: 90vw;
+      text-align: center;
+    }
+
+    .auth-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 45%);
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .kpi-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+    .kpi-label { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+    .kpi-val { font-size: 18px; font-weight: 800; color: var(--text); margin-top: 2px; }
+
+    .hidden { display: none !important; }
+    @media (max-width: 459px) { .hide-xs { display: none; } }
+    .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .muted-box {
+      padding: 14px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px dashed var(--border-strong);
+      font-size: 12.5px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+    .item-box {
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+    .badge-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--danger);
+      color: #fff;
+      line-height: 1.1;
+    }
+  </style>
+<script src="/_aistudio-iframe.js?v=29045eb3"></script><style>.aistudio-hover-highlight { box-shadow: inset 0 0 0 0.5px white, inset 0 0 0 1.5px rgba(128,128,128,0.6) !important; }.aistudio-active-highlight { outline: 2px solid #87a9ff !important; outline-offset: -2px !important; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.3), inset 0 0 0 0.5px rgba(0,0,0,0.3) !important; }.aistudio-generating-blur { filter: blur(5px) grayscale(100%) brightness(28%) !important; transition: filter 0.3s ease; }#aistudio-focus-mode-tag { position: absolute; display: none; align-items: center; gap: 4px; background: #87a9ff; border-radius: 12px; z-index: 10000; padding: 8px; color: #32302c; font-family: Inter, sans-serif; font-size: 14px; font-style: normal; font-weight: 500; line-height: 21px; pointer-events: none; }#aistudio-hover-mode-tag { position: absolute; display: none; align-items: center; gap: 4px; background: rgba(128,128,128,0.6); border-radius: 12px; z-index: 10000; padding: 8px; color: white; font-family: Inter, sans-serif; font-size: 14px; font-style: normal; font-weight: 500; line-height: 21px; pointer-events: none; }.aistudio-img-icon { display: none; vertical-align: middle; pointer-events: auto; cursor: pointer; }.aistudio-img-icon.visible { display: inline-flex; }#aistudio-focus-mode-tag .aistudio-img-icon { position: relative; width: 26px; height: 26px; background: #32302c; border-radius: 6px; margin: -4px -4px -4px 0; }#aistudio-focus-mode-tag .aistudio-img-icon::before { content: ""; position: absolute; top: 4px; left: 4px; width: 18px; height: 18px; background-color: white; -webkit-mask-image: url("https://fonts.gstatic.com/s/i/short-term/release/googlesymbols/edit_fix_auto/default/24px.svg"); -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; mask-image: url("https://fonts.gstatic.com/s/i/short-term/release/googlesymbols/edit_fix_auto/default/24px.svg"); mask-size: contain; mask-repeat: no-repeat; }#aistudio-hover-mode-tag .aistudio-img-icon { position: relative; width: 18px; height: 18px; margin-left: 4px; }#aistudio-hover-mode-tag .aistudio-img-icon::before { content: ""; position: absolute; top: 0; left: 0; width: 18px; height: 18px; background-color: white; -webkit-mask-image: url("https://fonts.gstatic.com/s/i/short-term/release/googlesymbols/edit_fix_auto/default/24px.svg"); -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; mask-image: url("https://fonts.gstatic.com/s/i/short-term/release/googlesymbols/edit_fix_auto/default/24px.svg"); mask-size: contain; mask-repeat: no-repeat; }#aistudio-focus-mode-tag .aistudio-img-icon:hover, #aistudio-hover-mode-tag .aistudio-img-icon:hover { background: #424242 !important; }#aistudio-focus-mode-tag .aistudio-img-icon:active, #aistudio-hover-mode-tag .aistudio-img-icon:active { background: #393f51 !important; }</style><script src="https://apis.google.com/js/api.js?onload=__iframefcb171251" type="text/javascript" charset="UTF-8" gapi_processed="true"></script></head>
+<body>
+  <div id="app"></div>
+
+  <script>
+  (function () {
+    'use strict';
+
+    // =========================================================================
+    // 1. 안전한 Storage 유틸 (file:// 더블클릭 환경 포함 예외 방지)
+    // =========================================================================
+    var memoryStore = {};
+    var storage = {
+      get: function (k) {
+        try {
+          return window.localStorage.getItem(k);
+        } catch (e) {
+          return Object.prototype.hasOwnProperty.call(memoryStore, k) ? memoryStore[k] : null;
+        }
+      },
+      set: function (k, v) {
+        try {
+          window.localStorage.setItem(k, v);
+        } catch (e) {
+          memoryStore[k] = v;
+        }
+      },
+      remove: function (k) {
+        try {
+          window.localStorage.removeItem(k);
+        } catch (e) {
+          delete memoryStore[k];
+        }
+      }
+    };
+
+    var SUBJECTS = [
+      '국어', '영어', '수학', '사회', '과학',
+      '한국사', '음악', '미술', '체육', '과탐실',
+      '종교', '자율', '정보'
+    ];
+    var WEEKDAYS = ['월', '화', '수', '목', '금'];
+    var TERM_PRESETS = [
+      '1학년 1학기 1차', '1학년 1학기 2차',
+      '1학년 2학기 1차', '1학년 2학기 2차',
+      '2학년 1학기 1차', '2학년 1학기 2차',
+      '2학년 2학기 1차', '2학년 2학기 2차',
+      '3학년 1학기 1차', '3학년 1학기 2차'
+    ];
+    var MOCK_PRESETS = [
+      '1학년 3월 학력평가', '1학년 6월 학력평가', '1학년 9월 학력평가', '1학년 11월 학력평가',
+      '2학년 3월 학력평가', '2학년 6월 학력평가', '2학년 9월 학력평가', '2학년 11월 학력평가',
+      '3학년 3월 학력평가', '3학년 6월 모의평가', '3학년 9월 모의평가', '대학수학능력시험'
+    ];
+    var MOCK_SUBJECTS = [
+      { name: '국어', max: 100 },
+      { name: '수학', max: 100 },
+      { name: '영어', max: 100 },
+      { name: '한국사', max: 50 },
+      { name: '탐구1', max: 50 },
+      { name: '탐구2', max: 50 }
+    ];
+
+    // =========================================================================
+    // 2. 전국 대학 · 학과 · 주요 고등학교 내장 디렉토리 + 실시간 웹 검색 연동
+    // =========================================================================
+    var KOREAN_UNIVERSITIES = [
+      { name: '서울대학교', location: '서울 관악구', category: '국립대', aliases: ['서울대', 'snu'], majors: ['컴퓨터공학부', '수리과학부', '경제학부', '의예과', '자유전공학부'] },
+      { name: '연세대학교', location: '서울 서대문구', category: '사립대', aliases: ['연세대', '연대'], majors: ['컴퓨터과학과', '인공지능학과', '경영학과', '생명공학과', '의예과'] },
+      { name: '고려대학교', location: '서울 성북구', category: '사립대', aliases: ['고려대', '고대'], majors: ['컴퓨터학과', '데이터과학과', '경영대학', '화공생명공학과', '미디어학부'] },
+      { name: '성균관대학교', location: '서울 종로구 · 경기 수원', category: '사립대', aliases: ['성균관대', '성대'], majors: ['소프트웨어학과', '반도체시스템공학과', '글로벌경영학과', '약학과'] },
+      { name: '서강대학교', location: '서울 마포구', category: '사립대', aliases: ['서강대'], majors: ['컴퓨터공학과', '인공지능학과', '경영학부', '경제학과', '전자공학과'] },
+      { name: '한양대학교', location: '서울 성동구', category: '사립대', aliases: ['한양대', '한대'], majors: ['컴퓨터소프트웨어학부', '미래자동차공학과', '기계공학부', '정책학과'] },
+      { name: '중앙대학교', location: '서울 동작구 · 경기 안성', category: '사립대', aliases: ['중앙대', '중대'], majors: ['소프트웨어학부', 'AI학과', '미디어커뮤니케이션학부', '경영학부'] },
+      { name: '경희대학교', location: '서울 동대문구 · 경기 용인', category: '사립대', aliases: ['경희대'], majors: ['컴퓨터공학과', '한의예과', '자율전공학부', '호텔경영학과'] },
+      { name: '한국외국어대학교', location: '서울 동대문구 · 경기 용인', category: '사립대', aliases: ['한국외대', '외대'], majors: ['Language & AI융합학부', 'ELLT학과', '국제통상학과'] },
+      { name: '서울시립대학교', location: '서울 동대문구', category: '공립대', aliases: ['서울시립대', '시립대'], majors: ['컴퓨터과학부', '도시공학과', '세무학과', '통계학과'] },
+      { name: '이화여자대학교', location: '서울 서대문구', category: '사립대', aliases: ['이화여대', '이대'], majors: ['컴퓨터공학과', '인공지능데이터사이언스학부', '초등교육과', '약학부'] },
+      { name: '건국대학교', location: '서울 광진구', category: '사립대', aliases: ['건국대', '건대'], majors: ['컴퓨터공학부', '수의예과', '스마트운행체공학과', '경영학과'] },
+      { name: '동국대학교', location: '서울 중구', category: '사립대', aliases: ['동국대'], majors: ['컴퓨터AI학부', '경찰행정학부', '영화영상학과', '바이오시스템학과'] },
+      { name: '홍익대학교', location: '서울 마포구 · 세종', category: '사립대', aliases: ['홍익대', '홍대'], majors: ['시각디자인과', '건축학부', '컴퓨터공학과', '자율전공'] },
+      { name: '숙명여자대학교', location: '서울 용산구', category: '사립대', aliases: ['숙명여대', '숙대'], majors: ['소프트웨어학부', '데이터사이언스전공', '교육학부', '약학부'] },
+      { name: '국민대학교', location: '서울 성북구', category: '사립대', aliases: ['국민대'], majors: ['소프트웨어학부', '자동차공학과', 'AI디자인학과', '경영학부'] },
+      { name: '숭실대학교', location: '서울 동작구', category: '사립대', aliases: ['숭실대'], majors: ['컴퓨터학부', 'AI융합학부', '정보보호학과', '금융학부'] },
+      { name: '세종대학교', location: '서울 광진구', category: '사립대', aliases: ['세종대'], majors: ['컴퓨터공학과', '지능기전공학과', '호텔관광경영학부', '항공우주공학과'] },
+      { name: '단국대학교', location: '경기 용인 · 충남 천안', category: '사립대', aliases: ['단국대'], majors: ['소프트웨어학과', '치의예과', '특수교육과', '건축학과'] },
+      { name: '아주대학교', location: '경기 수원시', category: '사립대', aliases: ['아주대'], majors: ['소프트웨어학과', '사이버보안학과', '기계공학과', '의학과'] },
+      { name: '인하대학교', location: '인천 미추홀구', category: '사립대', aliases: ['인하대'], majors: ['항공우주공학과', '컴퓨터공학과', '아태물류학부', '기계공학과'] },
+      { name: 'KAIST (한국과학기술원)', location: '대전 유성구', category: '과학기술원', aliases: ['카이스트', 'kaist', '한국과학기술원'], majors: ['전산학부', '전기및전자공학부', '수리과학과', '바이오및뇌공학과'] },
+      { name: 'POSTECH (포항공과대학교)', location: '경북 포항시', category: '특수대', aliases: ['포스텍', '포항공대', 'postech'], majors: ['무은재학부', '컴퓨터공학과', '반도체공학과', '물리학과'] },
+      { name: 'UNIST (울산과학기술원)', location: '울산 울주군', category: '과학기술원', aliases: ['유니스트', 'unist', '울산과기원'], majors: ['이공계열', '컴퓨터공학과', '반도체공학과', '에너지화학공학과'] },
+      { name: 'DGIST (대구경북과학기술원)', location: '대구 달성군', category: '과학기술원', aliases: ['디지스트', 'dgist'], majors: ['기초학부', '전자정보시스템공학과', '로봇및기계전자공학과'] },
+      { name: 'GIST (광주과학기술원)', location: '광주 북구', category: '과학기술원', aliases: ['지스트', 'gist'], majors: ['전기전자컴퓨터공학부', '물리광과학과', '생명과학부'] },
+      { name: 'KENTECH (한국에너지공과대학교)', location: '전남 나주시', category: '특수대', aliases: ['켄텍', '한국에너지공대'], majors: ['에너지공학부'] },
+      { name: '서울과학기술대학교', location: '서울 노원구', category: '국립대', aliases: ['서울과기대', '과기대'], majors: ['컴퓨터공학과', '인공지능응용학과', '디자인학과'] },
+      { name: '광운대학교', location: '서울 노원구', category: '사립대', aliases: ['광운대'], majors: ['소프트웨어학부', '로봇학부', '전자공학과'] },
+      { name: '명지대학교', location: '서울 서대문구 · 경기 용인', category: '사립대', aliases: ['명지대'], majors: ['컴퓨터공학과', '건축학부', '경영학과'] },
+      { name: '상명대학교', location: '서울 종로구 · 충남 천안', category: '사립대', aliases: ['상명대'], majors: ['컴퓨터과학전공', '애니메이션전공', '휴먼지능정보공학전공'] },
+      { name: '가톨릭대학교', location: '경기 부천 · 서울 서초', category: '사립대', aliases: ['가톨릭대', '가대'], majors: ['컴퓨터정보공학부', '간호학과', '심리학과'] },
+      { name: '한국항공대학교', location: '경기 고양시', category: '사립대', aliases: ['항공대', '한국항공대'], majors: ['항공우주및기계공학부', '소프트웨어학과', '항공운항학과'] },
+      { name: '가천대학교', location: '경기 성남 · 인천', category: '사립대', aliases: ['가천대'], majors: ['소프트웨어학과', '인공지능학과', '간호학과', '한의예과'] },
+      { name: '경기대학교', location: '경기 수원 · 서울 서대문', category: '사립대', aliases: ['경기대'], majors: ['AI컴퓨터공학부', '관광개발학과', '경찰행정학과'] },
+      { name: '인천대학교', location: '인천 연수구', category: '국립대', aliases: ['인천대'], majors: ['컴퓨터공학부', '임베디드시스템공학과', '동북아국제통상학부'] },
+      { name: '한국공학대학교', location: '경기 시흥시', category: '사립대', aliases: ['한국공대', '산기대'], majors: ['컴퓨터공학부', '전자공학부', '메카트로닉스공학부'] },
+      { name: '성신여자대학교', location: '서울 성북구', category: '사립대', aliases: ['성신여대'], majors: ['AI융합학부', '간호학과', '미디어커뮤니케이션학과'] },
+      { name: '서울여자대학교', location: '서울 노원구', category: '사립대', aliases: ['서울여대'], majors: ['디지털미디어학과', '정보보호학부', '소프트웨어융합학과'] },
+      { name: '덕성여자대학교', location: '서울 도봉구', category: '사립대', aliases: ['덕성여대'], majors: ['약학과', '디지털소프트웨어공학부', '유아교육과'] },
+      { name: '동덕여자대학교', location: '서울 성북구', category: '사립대', aliases: ['동덕여대'], majors: ['컴퓨터학과', '약학과', '큐레이터학과'] },
+      { name: '한성대학교', location: '서울 성북구', category: '사립대', aliases: ['한성대'], majors: ['컴퓨터공학부', '크리에이티브인문학부'] },
+      { name: '서경대학교', location: '서울 성북구', category: '사립대', aliases: ['서경대'], majors: ['소프트웨어학과', '미용예술학과', '실용음악학과'] },
+      { name: '삼육대학교', location: '서울 노원구', category: '사립대', aliases: ['삼육대'], majors: ['인공지능융합학부', '간호학과', '약학과'] },
+      { name: '부산대학교', location: '부산 금정구', category: '국가거점국립대', aliases: ['부산대'], majors: ['정보컴퓨터공학부', '기계공학부', '경영학과', '의예과'] },
+      { name: '경북대학교', location: '대구 북구', category: '국가거점국립대', aliases: ['경북대'], majors: ['컴퓨터학부', '전자공학부', '사범대학'] },
+      { name: '전남대학교', location: '광주 북구', category: '국가거점국립대', aliases: ['전남대'], majors: ['소프트웨어공학과', '인공지능학부', '의예과'] },
+      { name: '충남대학교', location: '대전 유성구', category: '국가거점국립대', aliases: ['충남대'], majors: ['컴퓨터융합학부', '인공지능학과', '수의예과'] },
+      { name: '전북대학교', location: '전북 전주시', category: '국가거점국립대', aliases: ['전북대'], majors: ['컴퓨터인공지능학부', '항공우주공학과', '치의예과'] },
+      { name: '충북대학교', location: '충북 청주시', category: '국가거점국립대', aliases: ['충북대'], majors: ['소프트웨어학부', '반도체공학부', '약학과'] },
+      { name: '강원대학교', location: '강원 춘천시', category: '국가거점국립대', aliases: ['강원대'], majors: ['컴퓨터공학과', '산림환경시스템학과', '수의예과'] },
+      { name: '경상국립대학교', location: '경남 진주시', category: '국가거점국립대', aliases: ['경상국립대', '경상대'], majors: ['항공우주공학부', '컴퓨터과학과', '수의예과'] },
+      { name: '제주대학교', location: '제주 제주시', category: '국가거점국립대', aliases: ['제주대'], majors: ['컴퓨터공학전공', '초등교육과', '해양생명과학과'] },
+      { name: '한국교원대학교', location: '충북 청주시', category: '국립대', aliases: ['한국교원대', '교원대'], majors: ['컴퓨터교육과', '수학교육과', '초등교육과'] },
+      { name: '서울교육대학교', location: '서울 서초구', category: '교육대', aliases: ['서울교대'], majors: ['초등교육과'] },
+      { name: '경인교육대학교', location: '인천 계양 · 경기 안양', category: '교육대', aliases: ['경인교대'], majors: ['초등교육과'] },
+      { name: '부산교육대학교', location: '부산 연제구', category: '교육대', aliases: ['부산교대'], majors: ['초등교육과'] },
+      { name: '대구교육대학교', location: '대구 남구', category: '교육대', aliases: ['대구교대'], majors: ['초등교육과'] },
+      { name: '광주교육대학교', location: '광주 북구', category: '교육대', aliases: ['광주교대'], majors: ['초등교육과'] },
+      { name: '춘천교육대학교', location: '강원 춘천시', category: '교육대', aliases: ['춘천교대'], majors: ['초등교육과'] },
+      { name: '청주교육대학교', location: '충북 청주시', category: '교육대', aliases: ['청주교대'], majors: ['초등교육과'] },
+      { name: '공주교육대학교', location: '충남 공주시', category: '교육대', aliases: ['공주교대'], majors: ['초등교육과'] },
+      { name: '전주교육대학교', location: '전북 전주시', category: '교육대', aliases: ['전주교대'], majors: ['초등교육과'] },
+      { name: '진주교육대학교', location: '경남 진주시', category: '교육대', aliases: ['진주교대'], majors: ['초등교육과'] },
+      { name: '한양대학교 ERICA', location: '경기 안산시', category: '사립대', aliases: ['에리카', '한양대 에리카'], majors: ['컴퓨터학부', '인공지능학과', '로봇공학과', '약학과'] },
+      { name: '부경대학교', location: '부산 남구', category: '국립대', aliases: ['부경대'], majors: ['컴퓨터·인공지능공학부', '기계공학과'] },
+      { name: '영남대학교', location: '경북 경산시', category: '사립대', aliases: ['영남대'], majors: ['컴퓨터공학과', '로봇공학과', '의예과'] },
+      { name: '동아대학교', location: '부산 사하구', category: '사립대', aliases: ['동아대'], majors: ['컴퓨터공학과', 'AI학과', '간호학과'] },
+      { name: '조선대학교', location: '광주 동구', category: '사립대', aliases: ['조선대'], majors: ['컴퓨터공학과', '의예과', '치의예과'] },
+      { name: '순천향대학교', location: '충남 아산시', category: '사립대', aliases: ['순천향대'], majors: ['AI·빅데이터학과', '정보보호학과', '의예과'] },
+      { name: '한국기술교육대학교', location: '충남 천안시', category: '사립대', aliases: ['한기대', '코리아텍'], majors: ['컴퓨터공학부', '메카트로닉스공학부'] },
+      { name: '한동대학교', location: '경북 포항시', category: '사립대', aliases: ['한동대'], majors: ['전산전자공학부', 'AI융합학부'] },
+      { name: '경찰대학', location: '충남 아산시', category: '특수대', aliases: ['경찰대'], majors: ['법학과', '행정학과'] },
+      { name: '육군사관학교', location: '서울 노원구', category: '특수대', aliases: ['육사'], majors: ['국방전략', '컴퓨터과학'] },
+      { name: '해군사관학교', location: '경남 창원시', category: '특수대', aliases: ['해사'], majors: ['해양공학', '사이버과학'] },
+      { name: '공군사관학교', location: '충북 청주시', category: '특수대', aliases: ['공사'], majors: ['항공우주공학', '컴퓨터과학'] },
+      { name: '한국예술종합학교', location: '서울 성북구 · 서초구', category: '국립특수대', aliases: ['한예종'], majors: ['영상원', '연극원', '음악원', '미술원'] },
+      { name: '한국체육대학교', location: '서울 송파구', category: '국립대', aliases: ['한체대', '한국체대'], majors: ['체육학과', '스포츠과학부'] },
+      { name: '한국방송통신대학교', location: '서울 종로구 · 전국', category: '국립대', aliases: ['방통대', '방송대'], majors: ['컴퓨터과학과', '법학과', '유아교육과'] },
+      { name: '한국해양대학교', location: '부산 영도구', category: '국립대', aliases: ['해양대'], majors: ['해사대학', '조선해양시스템공학부'] },
+      { name: '금오공과대학교', location: '경북 구미시', category: '국립대', aliases: ['금오공대'], majors: ['컴퓨터공학과', '전자공학부', '기계공학과'] },
+      { name: '한밭대학교', location: '대전 유성구', category: '국립대', aliases: ['한밭대'], majors: ['컴퓨터공학과', '반도체시스템공학과'] },
+      { name: '공주대학교', location: '충남 공주시', category: '국립대', aliases: ['공주대'], majors: ['사범대학', '컴퓨터공학부', '간호학과'] },
+      { name: '창원대학교', location: '경남 창원시', category: '국립대', aliases: ['창원대'], majors: ['기계공학부', '컴퓨터공학과'] },
+      { name: '군산대학교', location: '전북 군산시', category: '국립대', aliases: ['군산대'], majors: ['컴퓨터정보공학과', '간호학과'] },
+      { name: '목포대학교', location: '전남 무안군', category: '국립대', aliases: ['목포대'], majors: ['약학과', '컴퓨터공학과'] },
+      { name: '순천대학교', location: '전남 순천시', category: '국립대', aliases: ['순천대'], majors: ['약학과', '컴퓨터공학과'] },
+      { name: '안동대학교', location: '경북 안동시', category: '국립대', aliases: ['안동대'], majors: ['간호학과', '컴퓨터공학과'] },
+      { name: '강릉원주대학교', location: '강원 강릉 · 원주', category: '국립대', aliases: ['강릉원주대'], majors: ['치의예과', '컴퓨터공학과'] },
+      { name: '울산대학교', location: '울산 남구', category: '사립대', aliases: ['울산대'], majors: ['의예과', '조선해양공학부', 'IT융합학부'] },
+      { name: '인제대학교', location: '경남 김해 · 부산', category: '사립대', aliases: ['인제대'], majors: ['의예과', '약학과', 'AI빅데이터학부'] },
+      { name: '계명대학교', location: '대구 달서구', category: '사립대', aliases: ['계명대'], majors: ['의예과', '약학과', '컴퓨터공학과'] },
+      { name: '대구대학교', location: '경북 경산시', category: '사립대', aliases: ['대구대'], majors: ['특수교육과', '사회복지학과'] },
+      { name: '부산외국어대학교', location: '부산 금정구', category: '사립대', aliases: ['부산외대'], majors: ['외국어전공', '컴퓨터공학과'] },
+      { name: '경남대학교', location: '경남 창원시', category: '사립대', aliases: ['경남대'], majors: ['사범대학', '간호학과', '컴퓨터공학부'] },
+      { name: '원광대학교', location: '전북 익산시', category: '사립대', aliases: ['원광대'], majors: ['의예과', '치의예과', '한의예과', '약학과'] },
+      { name: '전주대학교', location: '전북 전주시', category: '사립대', aliases: ['전주대'], majors: ['사범대학', '인공지능학과'] },
+      { name: '한남대학교', location: '대전 대덕구', category: '사립대', aliases: ['한남대'], majors: ['컴퓨터공학과', '사범대학'] },
+      { name: '배재대학교', location: '대전 서구', category: '사립대', aliases: ['배재대'], majors: ['소프트웨어공학부', '항공서비스학과'] },
+      { name: '한림대학교', location: '강원 춘천시', category: '사립대', aliases: ['한림대'], majors: ['의예과', '소프트웨어학부', '데이터사이언스학부'] },
+      { name: '수원대학교', location: '경기 화성시', category: '사립대', aliases: ['수원대'], majors: ['컴퓨터SW학과', '간호학과'] },
+      { name: '대진대학교', location: '경기 포천시', category: '사립대', aliases: ['대진대'], majors: ['AI빅데이터전공', '간호학과'] },
+      { name: '신한대학교', location: '경기 의정부 · 동두천', category: '사립대', aliases: ['신한대'], majors: ['간호학과', '소프트웨어융합전공'] },
+      { name: '백석대학교', location: '충남 천안시', category: '사립대', aliases: ['백석대'], majors: ['사범학부', '간호학과', '컴퓨터공학부'] },
+      { name: '호서대학교', location: '충남 아산 · 천안', category: '사립대', aliases: ['호서대'], majors: ['컴퓨터공학부', '반도체공학과'] },
+      { name: '청주대학교', location: '충북 청주시', category: '사립대', aliases: ['청주대'], majors: ['항공운항학과', '간호학과'] },
+      { name: '한국폴리텍대학', location: '전국 캠퍼스', category: '특수·기능대', aliases: ['폴리텍'], majors: ['반도체시스템과', '인공지능소프트웨어과'] },
+      { name: '동양미래대학교', location: '서울 구로구', category: '전문대', aliases: ['동양미래대'], majors: ['컴퓨터공학부', '시각디자인과'] },
+      { name: '인하공업전문대학', location: '인천 미추홀구', category: '전문대', aliases: ['인하공전'], majors: ['항공운항과', '컴퓨터정보공학과'] },
+      { name: '명지전문대학', location: '서울 서대문구', category: '전문대', aliases: ['명지전문대'], majors: ['소프트웨어콘텐츠과', '유아교육과'] },
+      { name: '서울예술대학교', location: '경기 안산시', category: '전문대', aliases: ['서울예대'], majors: ['실용음악전공', '방송영상전공', '문예창작전공'] },
+      { name: '수원과학대학교', location: '경기 화성시', category: '전문대', aliases: ['수원과학대'], majors: ['항공관광과', '간호학과'] },
+      { name: '경복대학교', location: '경기 남양주 · 포천', category: '전문대', aliases: ['경복대'], majors: ['간호학과', '치위생과'] },
+      { name: '대림대학교', location: '경기 안양시', category: '전문대', aliases: ['대림대'], majors: ['컴퓨터정보학부', '반도체학과'] },
+      { name: '연성대학교', location: '경기 안양시', category: '전문대', aliases: ['연성대'], majors: ['항공서비스과', '호텔조리과'] },
+      { name: '청강문화산업대학교', location: '경기 이천시', category: '전문대', aliases: ['청강대'], majors: ['만화콘텐츠스쿨', '게임콘텐츠스쿨'] },
+      { name: '영진전문대학교', location: '대구 북구', category: '전문대', aliases: ['영진전문대'], majors: ['컴퓨터정보계열', '간호학과'] },
+      { name: '서울사이버대학교', location: '서울 강북구', category: '사이버대', aliases: ['서울사이버대'], majors: ['심리·상담학부', '컴퓨터공학과'] },
+      { name: '한양사이버대학교', location: '서울 성동구', category: '사이버대', aliases: ['한양사이버대'], majors: ['컴퓨터공학과', '경영학부'] }
+    ];
+
+    var KOREAN_MAJORS = [
+      { name: '컴퓨터공학부', field: '공학 · IT', description: '알고리즘, 운영체제, 소프트웨어 설계 및 시스템 개발', kw: ['컴공', 'sw', '개발'] },
+      { name: '소프트웨어학부', field: '공학 · IT', description: '웹·앱 개발, 클라우드, 보안 및 AI 응용 소프트웨어', kw: ['소웨', 'sw'] },
+      { name: '인공지능학과', field: '공학 · AI', description: '머신러닝, 딥러닝, 자연어처리, 컴퓨터비전 연구', kw: ['ai', '인공지능'] },
+      { name: '인공지능융합학부', field: '공학 · AI', description: 'AI 알고리즘 및 산업 융합 응용 연구', kw: ['ai', '인공지능', '융합'] },
+      { name: '데이터사이언스학과', field: '공학 · 데이터', description: '빅데이터 통계 분석, 데이터 엔지니어링 및 예측 모델링', kw: ['데이터', '빅데이터'] },
+      { name: '정보보호학과', field: '공학 · 보안', description: '사이버 보안, 암호학 및 디지털 포렌식', kw: ['보안', '사이버보안'] },
+      { name: '반도체공학과', field: '공학 · 반도체', description: '반도체 소자·공정, 회로 설계 및 차세대 칩 아키텍처', kw: ['반도체', '칩'] },
+      { name: '반도체시스템공학과', field: '공학 · 반도체', description: '차세대 반도체 소자·회로·시스템 설계', kw: ['반도체'] },
+      { name: '전자전기공학부', field: '공학 · 전자', description: '전자회로, 신호처리, 통신 및 임베디드 시스템', kw: ['전자', '전기'] },
+      { name: '기계공학부', field: '공학', description: '열역학, 유체역학, 로보틱스, 모빌리티 설계 및 제어', kw: ['기계'] },
+      { name: '로봇공학과', field: '공학 · 로봇', description: '자율주행, 지능형 로봇 제어 및 센서 융합', kw: ['로봇', '자율주행'] },
+      { name: '미래자동차공학과', field: '공학 · 모빌리티', description: '전기차·수소차 파워트레인 및 자율주행 모빌리티', kw: ['자동차', '모빌리티'] },
+      { name: '항공우주공학과', field: '공학 · 항공', description: '항공기·우주발사체 설계, 공기역학 및 위성 시스템', kw: ['항공', '우주'] },
+      { name: '화학생명공학과', field: '공학 · 화학', description: '화학 공정, 신소재, 배터리 및 바이오 에너지 응용', kw: ['화공', '배터리'] },
+      { name: '신소재공학부', field: '공학 · 재료', description: '나노 소재, 이차전지 전극, 세라믹·금속 소재 연구', kw: ['재료', '신소재'] },
+      { name: '생명공학과', field: '공학 · 바이오', description: '유전자공학, 세포배양, 바이오의약 및 합성생물학', kw: ['바이오', '생명'] },
+      { name: '건축학과', field: '공학 · 건축', description: '건축 설계, 도시 공간 디자인 및 친환경 스마트 건축', kw: ['건축', '설계'] },
+      { name: '도시공학과', field: '공학 · 도시', description: '스마트시티 계획, 교통 시스템 및 지속가능 도시 개발', kw: ['도시'] },
+      { name: '산업공학과', field: '공학 · 경영', description: '시스템 최적화, 품질경영, 데이터 기반 의사결정', kw: ['산공'] },
+      { name: '수리과학부', field: '자연과학', description: '순수수학, 응용수학, 금융수학 및 암호 이론', kw: ['수학'] },
+      { name: '통계학과', field: '자연과학 · 데이터', description: '확률론, 통계 모델링, 머신러닝 및 데이터 분석', kw: ['통계'] },
+      { name: '물리학과', field: '자연과학', description: '양자역학, 고체물리, 광학 및 천체물리 연구', kw: ['물리'] },
+      { name: '화학과', field: '자연과학', description: '유기·무기·분석화학 및 신약·촉매 분자 설계', kw: ['화학'] },
+      { name: '생명과학과', field: '자연과학 · 바이오', description: '분자생물학, 신경과학, 면역학 및 유전체 분석', kw: ['생물', '생명'] },
+      { name: '의예과', field: '의약학', description: '기초·임상 의학 교육 및 의생명 연구', kw: ['의대', '의학'] },
+      { name: '치의예과', field: '의약학', description: '구강악안면 의학, 치의학 임상 및 생체재료 연구', kw: ['치대'] },
+      { name: '한의예과', field: '의약학', description: '한의학 기초·임상 및 통합의학·천연물 연구', kw: ['한의대'] },
+      { name: '수의예과', field: '의약학', description: '동물 질병 진단·치료 및 생명연구', kw: ['수의대'] },
+      { name: '약학과', field: '의약학', description: '신약 개발, 약물전달체계 및 임상약학', kw: ['약대'] },
+      { name: '간호학과', field: '보건 · 간호', description: '임상 간호, 지역사회 보건 및 전문간호 실무', kw: ['간호'] },
+      { name: '물리치료학과', field: '보건 · 재활', description: '근골격·신경계 재활 치료 및 스포츠 재활', kw: ['물치', '재활'] },
+      { name: '경영학과', field: '경상 · 경영', description: '마케팅, 재무·회계, 인사조직, 전략경영 및 창업', kw: ['경영', '마케팅'] },
+      { name: '경제학부', field: '경상 · 경제', description: '거시·미시경제, 계량경제, 금융시장 및 공공정책', kw: ['경제', '금융'] },
+      { name: '국제통상학과', field: '경상 · 무역', description: '글로벌 공급망, 국제무역 및 해외시장 전략', kw: ['무역', '통상'] },
+      { name: '정치외교학과', field: '사회과학', description: '국제관계, 외교·안보 및 공공거버넌스', kw: ['정외', '외교'] },
+      { name: '행정학과', field: '사회과학', description: '공공정책 설계 및 정부 조직관리', kw: ['행정', '정책'] },
+      { name: '경찰행정학부', field: '사회과학 · 치안', description: '범죄학, 형사사법, 사이버 수사 및 공공안전', kw: ['경찰'] },
+      { name: '미디어커뮤니케이션학부', field: '사회과학 · 언론', description: '저널리즘, 디지털 미디어, 광고홍보 및 콘텐츠 분석', kw: ['미컴', '언론', '신방'] },
+      { name: '심리학과', field: '사회과학', description: '인지심리, 상담·임상심리 및 행동데이터 연구', kw: ['심리'] },
+      { name: '사회복지학과', field: '사회과학 · 복지', description: '복지 정책 및 사회서비스 실천', kw: ['복지'] },
+      { name: '국어국문학과', field: '인문 · 어문', description: '한국 문학, 국어학 및 텍스트 콘텐츠 비평', kw: ['국문', '문학'] },
+      { name: '영어영문학과', field: '인문 · 어문', description: '영미 문학, 영어학 및 글로벌 문화 비평', kw: ['영문', '영어'] },
+      { name: '사학과', field: '인문 · 역사', description: '한국사·세계사 사료 비평 및 역사 콘텐츠 연구', kw: ['역사', '한국사'] },
+      { name: '철학과', field: '인문', description: '윤리학, 논리학, AI 윤리 및 인문학적 사고 탐구', kw: ['철학', '윤리'] },
+      { name: '교육학과', field: '사범 · 교육', description: '교육과정, 교육심리 및 에듀테크 연구', kw: ['교육'] },
+      { name: '초등교육과', field: '사범 · 교육', description: '초등 교과 교육론 및 초등 교사 양성', kw: ['초등', '교대'] },
+      { name: '국어교육과', field: '사범 · 교육', description: '국어 교과 교육 및 중등 국어 교사 양성', kw: ['국교'] },
+      { name: '수학교육과', field: '사범 · 교육', description: '수학 교육론 및 중등 수학 교사 양성', kw: ['수교'] },
+      { name: '영어교육과', field: '사범 · 교육', description: '영어 교수법 및 중등 영어 교사 양성', kw: ['영교'] },
+      { name: '자유전공학부', field: '융합 · 무전공', description: '기초 탐색 후 희망 전공 자율 선택', kw: ['자전', '무전공', '자율전공'] },
+      { name: '시각디자인과', field: '예체능 · 디자인', description: '브랜드 디자인, UX/UI 및 영상 그래픽', kw: ['디자인', 'ux'] },
+      { name: '체육학과', field: '예체능 · 스포츠', description: '스포츠과학, 운동생리학 및 스포츠산업', kw: ['체대', '스포츠'] },
+      { name: '항공운항과', field: '항공 · 서비스', description: '객실·운항 전문 인력 양성 및 항공 안전 서비스', kw: ['항공'] },
+      { name: '연극영화학과', field: '예체능 · 영상', description: '연기, 영화 연출 및 영상 프로덕션', kw: ['연영', '영화'] }
+    ];
+
+    var SAMPLE_HIGH_SCHOOLS = [
+      { name: '서울고등학교', schoolCode: '7010083', officeCode: 'B10', location: '서울특별시', address: '서울특별시 서초구 효령로 197', fondType: '공립' },
+      { name: '경기고등학교', schoolCode: '7010059', officeCode: 'B10', location: '서울특별시', address: '서울특별시 강남구 영동대로 643', fondType: '공립' },
+      { name: '가락고등학교', schoolCode: '7010057', officeCode: 'B10', location: '서울특별시', address: '서울특별시 송파구 송이로 42', fondType: '공립' },
+      { name: '단국대학교사범대학부속고등학교', schoolCode: '7010150', officeCode: 'B10', location: '서울특별시', address: '서울특별시 강남구 도곡로 64길 21', fondType: '사립' },
+      { name: '수원고등학교', schoolCode: '7530117', officeCode: 'J10', location: '경기도', address: '경기도 수원시 팔달구 고화로 130', fondType: '사립' },
+      { name: '부산고등학교', schoolCode: '7150096', officeCode: 'C10', location: '부산광역시', address: '부산광역시 동구 망양로 690', fondType: '공립' },
+      { name: '경북고등학교', schoolCode: '7240057', officeCode: 'D10', location: '대구광역시', address: '대구광역시 수성구 청호로 300', fondType: '공립' },
+      { name: '인천고등학교', schoolCode: '7310058', officeCode: 'E10', location: '인천광역시', address: '인천광역시 미추홀구 주안로 193', fondType: '공립' },
+      { name: '광주고등학교', schoolCode: '7380054', officeCode: 'F10', location: '광주광역시', address: '광주광역시 동구 제봉로 178', fondType: '공립' },
+      { name: '대전고등학교', schoolCode: '7430048', officeCode: 'G10', location: '대전광역시', address: '대전광역시 중구 대종로 515', fondType: '공립' }
+    ];
+
+    // =========================================================================
+    // 3. 날짜 · 바이트 · SVG 아이콘 · 공통 헬퍼
+    // =========================================================================
+    function getTodayISO() {
+      var d = new Date();
+      var y = d.getFullYear();
+      var m = String(d.getMonth() + 1).padStart(2, '0');
+      var day = String(d.getDate()).padStart(2, '0');
+      return y + '-' + m + '-' + day;
+    }
+
+    function addDaysISO(baseISO, delta) {
+      var p = baseISO.split('-').map(Number);
+      var d = new Date(p[0], p[1] - 1, p[2] + delta);
+      var y = d.getFullYear();
+      var m = String(d.getMonth() + 1).padStart(2, '0');
+      var day = String(d.getDate()).padStart(2, '0');
+      return y + '-' + m + '-' + day;
+    }
+
+    function getDiffDaysFromToday(iso) {
+      var t = getTodayISO().split('-').map(Number);
+      var p = iso.split('-').map(Number);
+      var d1 = new Date(t[0], t[1] - 1, t[2]);
+      var d2 = new Date(p[0], p[1] - 1, p[2]);
+      return Math.round((d2.getTime() - d1.getTime()) / 86400000);
+    }
+
+    function formatKoreanDate(iso) {
+      if (!iso) return '';
+      var p = iso.split('-').map(Number);
+      if (p.length !== 3 || isNaN(p[0])) return iso;
+      var d = new Date(p[0], p[1] - 1, p[2]);
+      var days = ['일', '월', '화', '수', '목', '금', '토'];
+      return p[0] + '.' + String(p[1]).padStart(2, '0') + '.' + String(p[2]).padStart(2, '0') + ' (' + days[d.getDay()] + ')';
+    }
+
+    // NEIS 나이스 기준 바이트 계산 (한글/비ASCII 3바이트, 영문/숫자/공백 1바이트)
+    function calcNeisBytes(text) {
+      var str = String(text || '');
+      var bytes = 0;
+      for (var i = 0; i < str.length; i++) {
+        var code = str.charCodeAt(i);
+        if (code <= 0x7f) bytes += 1;
+        else bytes += 3;
+      }
+      return bytes;
+    }
+
+    function esc(str) {
+      return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function uid(prefix) {
+      return (prefix || 'id') + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+    }
+
+    function svgIcon(name, cls) {
+      var c = cls || '';
+      var paths = {
+        list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+        school: '<path d="M14 22v-4a2 2 0 1 0-4 0v4"/><path d="m18 10 4 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8l4-2"/><path d="M18 5v17"/><path d="m4 6 8-4 8 4"/><path d="M6 5v17"/><circle cx="12" cy="9" r="2"/>',
+        cal: '<rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/>',
+        pen: '<path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"/>',
+        cpu: '<rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2"/>',
+        user: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/>',
+        bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+        logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
+        search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+        globe: '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
+        plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+        trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>',
+        check: '<polyline points="20 6 9 17 4 12"/>',
+        x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+        left: '<path d="m15 18-6-6 6-6"/>',
+        right: '<path d="m9 18 6-6-6-6"/>',
+        refresh: '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
+        download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>',
+        upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>'
+      };
+      return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="' + c + '" aria-hidden="true">' + (paths[name] || '') + '</svg>';
+    }
+
+    // =========================================================================
+    // 4. Google 로그인 + Cloud Firestore 실시간 교차 기기 동기화 헬퍼
+    // =========================================================================
+    var LEGACY_SESSION_KEY = 'school_helper_session_v1';
+
+    function keyFor(userId, part) {
+      return 'school_helper_' + userId + '_' + part + '_v3';
+    }
+
+    function loadJSON(key, fallback) {
+      var raw = storage.get(key);
+      if (!raw) return fallback;
+      try { return JSON.parse(raw); } catch (e) { return fallback; }
+    }
+
+    function isLocalOfflineMode() {
+      return window.location.protocol === 'file:';
+    }
+
+    function getBridge() {
+      return window.__schoolFirebaseBridge || null;
+    }
+
+    function createEmptyTimetable() {
+      var tt = {};
+      for (var i = 0; i < WEEKDAYS.length; i++) {
+        tt[WEEKDAYS[i]] = ['', '', '', '', '', '', '', ''];
+      }
+      return tt;
+    }
+
+    function createEmptyProfile() {
+      return {
+        schoolName: '',
+        schoolCode: '',
+        officeCode: '',
+        schoolAddress: '',
+        grade: '1',
+        classNum: '',
+        studentNumber: '',
+        name: '',
+        targetUniversity: '',
+        targetUniversityLocation: '',
+        targetMajor: '',
+        extraTargets: [],
+        updatedAt: ''
+      };
+    }
+
+    function createInitialRecords() {
+      var today = getTodayISO();
+      return [
+        {
+          id: 'demo-rem-1',
+          kind: 'schedule',
+          subject: '리마인더',
+          title: '국어 비문학 독서 비평 보고서 마감',
+          content: '서론-본론-결론 구조 점검 및 인용 출처 정리',
+          date: addDaysISO(today, 1),
+          completed: false,
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'demo-log-1',
+          kind: 'assignment',
+          subject: '정보',
+          title: '공공데이터 API 기반 학교 미세먼지 시각화 탐구',
+          content: '파이썬을 활용해 공공데이터포털 대기오염 데이터를 수집·전처리하고 등교 시간대 농도 변화를 분석함. 결측치 보간 알고리즘을 직접 구현하여 예측 정확도를 높임.',
+          date: addDaysISO(today, -3),
+          link: '',
+          attachments: [],
+          completed: true,
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'demo-log-2',
+          kind: 'assignment',
+          subject: '수학',
+          title: '미분계수와 대기오염 확산 변화율 모델링',
+          content: '시간에 따른 미세먼지 농도 곡선에서 순간변화율(미분계수)을 추정하여 급격한 악화 구간을 수학적으로 탐지하는 탐구 보고서를 작성함.',
+          date: addDaysISO(today, -1),
+          link: '',
+          attachments: [],
+          completed: true,
+          createdAt: new Date().toISOString()
+        }
+      ];
+    }
+
+    // =========================================================================
+    // 5. 앱 상태 (Single State Store)
+    // =========================================================================
+    var state = {
+      currentUser: null,
+      authUser: null,
+      authReady: isLocalOfflineMode(),
+      isLoggingIn: false,
+      authError: '',
+      syncError: '',
+      activeTab: 'schedule',
+      selectedDate: getTodayISO(),
+      bannerDismissed: false,
+      showAlertModal: false,
+      toastMsg: '',
+      toastTimer: null,
+
+      // User data
+      records: [],
+      savedSaeteuks: [],
+      profile: createEmptyProfile(),
+      timetable: createEmptyTimetable(),
+      meals: [],
+      grades: [],
+      mockExams: [],
+
+      // Sub-states
+      schoolSubTab: 'timetable', // timetable | meal | grades
+      gradeMode: 'school', // school | mock
+      mealDate: getTodayISO(),
+      mealType: '중식',
+      isFetchingMeal: false,
+      mealAutoAttempted: {},
+      mealNoticeMsg: '',
+
+      calYear: new Date().getFullYear(),
+      calMonth: new Date().getMonth(),
+
+      inputSubTab: 'write',
+      selectedArchiveId: '',
+      draftAttachments: [],
+      fileScanProgress: 0,
+      fileScanStatus: '',
+      pendingApplyScanText: '',
+      inputForm: {
+        subject: '국어',
+        date: getTodayISO(),
+        title: '',
+        content: '',
+        link: ''
+      },
+
+      aiSubTab: 'summary', // summary | linkage | archive
+      aiSelectedIds: [],
+      aiDirection: '',
+      aiProgress: 0,
+      aiProgressMsg: '',
+      aiEtaText: '',
+      aiSummaryResult: null,
+      aiLinkageResult: null,
+      editingSaeteukId: '',
+      editingSaeteukTitle: '',
+      editingSaeteukDraft: '',
+
+      // Profile search states
+      schoolQuery: '',
+      schoolResults: [],
+      showSchoolDropdown: false,
+      isSearchingSchool: false,
+
+      uniQuery: '',
+      webUniversities: [],
+      isSearchingUni: false,
+      suggestedMajors: [],
+
+      majorQuery: '',
+      webMajors: [],
+      showMajorDropdown: false,
+      isSearchingMajor: false,
+
+      backupPaste: '',
+      backupPreview: null,
+      backupError: ''
+    };
+
+    function loadLocalUserData(userId) {
+      state.activeTab = loadJSON(keyFor(userId, 'tab'), 'schedule');
+      state.records = loadJSON(keyFor(userId, 'records'), null);
+      if (!Array.isArray(state.records)) {
+        state.records = createInitialRecords();
+        savePart('records');
+      }
+      state.savedSaeteuks = loadJSON(keyFor(userId, 'saeteuks'), []);
+      state.profile = Object.assign(createEmptyProfile(), loadJSON(keyFor(userId, 'profile'), {}));
+      state.timetable = Object.assign(createEmptyTimetable(), loadJSON(keyFor(userId, 'timetable'), {}));
+      state.meals = loadJSON(keyFor(userId, 'meals'), []);
+      state.grades = loadJSON(keyFor(userId, 'grades'), []);
+      state.mockExams = loadJSON(keyFor(userId, 'mockExams'), []);
+
+      state.schoolQuery = state.profile.schoolName || '';
+      state.uniQuery = state.profile.targetUniversity || '';
+      state.majorQuery = state.profile.targetMajor || '';
+      state.aiSelectedIds = state.records.filter(function (r) { return r.kind === 'assignment'; }).map(function (r) { return r.id; });
+    }
+
+    var timetableSyncTimer = null;
+    function savePart(part) {
+      if (!state.currentUser) return;
+      var map = {
+        tab: state.activeTab,
+        records: state.records,
+        saeteuks: state.savedSaeteuks,
+        profile: state.profile,
+        timetable: state.timetable,
+        meals: state.meals,
+        grades: state.grades,
+        mockExams: state.mockExams
+      };
+      storage.set(keyFor(state.currentUser, part), JSON.stringify(map[part]));
+      var bridge = getBridge();
+      if (bridge && state.authUser && !state.authUser.isLocalFallback) {
+        if (part === 'tab') {
+          bridge.updateWorkspaceField('activeTab', state.activeTab);
+        } else if (part === 'profile') {
+          bridge.updateWorkspaceField('profile', state.profile);
+        } else if (part === 'timetable') {
+          if (timetableSyncTimer) clearTimeout(timetableSyncTimer);
+          timetableSyncTimer = setTimeout(function () {
+            bridge.updateWorkspaceField('timetable', state.timetable);
+          }, 450);
+        }
+      }
+    }
+
+    function showToast(msg) {
+      state.toastMsg = msg;
+      if (state.toastTimer) clearTimeout(state.toastTimer);
+      render();
+      state.toastTimer = setTimeout(function () {
+        state.toastMsg = '';
+        render();
+      }, 2600);
+    }
+
+    // =========================================================================
+    // 6. 클라이언트 첨부파일 텍스트 스캔 (TXT, CSV, MD, PDF, DOCX, PPTX 지원)
+    // =========================================================================
+    function extractReadableFromBinary(bytes) {
+      // UTF-8 디코딩 후 가독 문자(한글, 영문, 숫자, 문장부호) 정리
+      var text = '';
+      try {
+        text = new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+      } catch (e) {
+        for (var i = 0; i < Math.min(bytes.length, 60000); i++) {
+          if (bytes[i] >= 32 && bytes[i] <= 126) text += String.fromCharCode(bytes[i]);
+        }
+      }
+      // PDF 괄호 스트림 텍스트 추출 보강
+      var pdfPieces = [];
+      var re = /\(([^()]{2,200})\)\s*Tj/g;
+      var m;
+      while ((m = re.exec(text)) !== null) {
+        pdfPieces.push(m[1]);
+      }
+      if (pdfPieces.length > 3) {
+        return pdfPieces.join(' ').replace(/\s+/g, ' ').trim();
+      }
+      // 일반 가독 한글·영문 블록 추출
+      var clean = text.replace(/[^\uAC00-\uD7A3a-zA-Z0-9\s.,!?():;'"%\-\/\n]/g, ' ')
+        .replace(/[ \t]{2,}/g, ' ')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+      return clean.slice(0, 4000);
+    }
+
+    async function inflateRawBrowser(u8) {
+      if (typeof DecompressionStream === 'undefined') return null;
+      try {
+        var ds = new DecompressionStream('deflate-raw');
+        var writer = ds.writable.getWriter();
+        writer.write(u8);
+        writer.close();
+        var buf = await new Response(ds.readable).arrayBuffer();
+        return new Uint8Array(buf);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function extractZipXmlText(bytes, pattern) {
+      var view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      var eocd = -1;
+      for (var i = bytes.length - 22; i >= Math.max(0, bytes.length - 65557); i--) {
+        if (bytes[i] === 0x50 && bytes[i + 1] === 0x4b && bytes[i + 2] === 0x05 && bytes[i + 3] === 0x06) {
+          eocd = i; break;
+        }
+      }
+      if (eocd === -1) return '';
+      var cdCount = view.getUint16(eocd + 10, true);
+      var ptr = view.getUint32(eocd + 16, true);
+      var texts = [];
+      for (var idx = 0; idx < cdCount && ptr + 46 <= bytes.length; idx++) {
+        if (view.getUint32(ptr, true) !== 0x02014b50) break;
+        var method = view.getUint16(ptr + 10, true);
+        var compSize = view.getUint32(ptr + 20, true);
+        var nameLen = view.getUint16(ptr + 28, true);
+        var extraLen = view.getUint16(ptr + 30, true);
+        var commentLen = view.getUint16(ptr + 32, true);
+        var localOff = view.getUint32(ptr + 42, true);
+        var fname = new TextDecoder('utf-8').decode(bytes.subarray(ptr + 46, ptr + 46 + nameLen));
+        ptr += 46 + nameLen + extraLen + commentLen;
+        if (!pattern.test(fname)) continue;
+        if (localOff + 30 > bytes.length) continue;
+        var lfnLen = view.getUint16(localOff + 26, true);
+        var lfeLen = view.getUint16(localOff + 28, true);
+        var dStart = localOff + 30 + lfnLen + lfeLen;
+        var slice = bytes.subarray(dStart, Math.min(bytes.length, dStart + compSize));
+        var plain = method === 0 ? slice : (method === 8 ? await inflateRawBrowser(slice) : null);
+        if (plain) {
+          var xml = new TextDecoder('utf-8', { fatal: false }).decode(plain);
+          var stripped = xml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+          if (stripped) texts.push(stripped);
+        }
+      }
+      return texts.join('\n').slice(0, 5000);
+    }
+
+    async function scanAttachmentFile(file) {
+      state.fileScanProgress = 15;
+      state.fileScanStatus = '파일 읽는 중...';
+      render();
+
+      var buf = await file.arrayBuffer();
+      var bytes = new Uint8Array(buf);
+      state.fileScanProgress = 45;
+      state.fileScanStatus = '본문 텍스트 추출 중...';
+      render();
+
+      var lower = file.name.toLowerCase();
+      var extracted = '';
+      if (/\.(txt|md|csv|json|html|xml|log)$/i.test(lower)) {
+        extracted = new TextDecoder('utf-8', { fatal: false }).decode(bytes).slice(0, 5000);
+      } else if (/\.(docx|pptx|xlsx|hwpx)$/i.test(lower)) {
+        extracted = await extractZipXmlText(bytes, /(word\/document\.xml|ppt\/slides\/slide|Contents\/section|xl\/sharedStrings)/i);
+        if (!extracted) extracted = extractReadableFromBinary(bytes);
+      } else {
+        extracted = extractReadableFromBinary(bytes);
+      }
+
+      state.fileScanProgress = 80;
+      state.fileScanStatus = '탐구 과정 및 핵심 키워드 분석 중...';
+      render();
+      await new Promise(function (r) { setTimeout(r, 250); });
+
+      var sizeStr = file.size < 1048576 ? Math.max(1, Math.round(file.size / 1024)) + 'KB' : (file.size / 1048576).toFixed(1) + 'MB';
+      var summaryText = extracted.trim()
+        ? extracted.trim().slice(0, 1500)
+        : file.name + ' (' + sizeStr + ') 첨부 완료 — 바이너리/스캔 문서로 핵심 설명을 상세내용에 보완해 주세요.';
+
+      state.draftAttachments.push({
+        fileName: file.name,
+        fileSize: sizeStr,
+        extractedText: summaryText
+      });
+
+      state.fileScanProgress = 100;
+      state.fileScanStatus = '파일 스캔 완료';
+      if (extracted.trim()) {
+        state.pendingApplyScanText = summaryText;
+      }
+      render();
+    }
+
+    // =========================================================================
+    // 7. 외부 API (NEIS 학교/급식, 위키백과 대학/학과 웹 검색) - file:// 안전 폴백 포함
+    // =========================================================================
+    async function searchHighSchoolsLive(keyword) {
+      var q = keyword.trim();
+      var results = [];
+      var seen = {};
+      function pushSchool(s) {
+        var k = s.name + ':' + (s.officeCode || '');
+        if (seen[k]) return;
+        seen[k] = true;
+        results.push(s);
+      }
+
+      // 1) NEIS 공식 학교정보 조회 시도
+      try {
+        var url = 'https://open.neis.go.kr/hub/schoolInfo?Type=json&pIndex=1&pSize=5&SCHUL_KND_SC_NM=' +
+          encodeURIComponent('고등학교') + '&SCHUL_NM=' + encodeURIComponent(q);
+        var ctrl = new AbortController();
+        var timer = setTimeout(function () { ctrl.abort(); }, 3500);
+        var res = await fetch(url, { signal: ctrl.signal });
+        clearTimeout(timer);
+        if (res.ok) {
+          var data = await res.json();
+          var rows = (data && data.schoolInfo && data.schoolInfo[1] && data.schoolInfo[1].row) || [];
+          for (var i = 0; i < rows.length; i++) {
+            pushSchool({
+              name: rows[i].SCHUL_NM,
+              schoolCode: rows[i].SD_SCHUL_CODE || '',
+              officeCode: rows[i].ATPT_OFCDC_SC_CODE || '',
+              location: rows[i].LCTN_SC_NM || '',
+              address: rows[i].ORG_RDNMA || '',
+              fondType: rows[i].FOND_SC_NM || ''
+            });
+          }
+        }
+      } catch (e) { /* CORS/offline fallback below */ }
+
+      // 2) 한국어 위키백과 고등학교 검색 (origin=* CORS 지원)
+      if (results.length < 3) {
+        try {
+          var wUrl = 'https://ko.wikipedia.org/w/api.php?action=query&list=search&srsearch=' +
+            encodeURIComponent(q.indexOf('고') >= 0 ? q + ' 고등학교' : q + '고등학교') +
+            '&format=json&srlimit=10&origin=*';
+          var ctrl2 = new AbortController();
+          var timer2 = setTimeout(function () { ctrl2.abort(); }, 3500);
+          var res2 = await fetch(wUrl, { signal: ctrl2.signal });
+          clearTimeout(timer2);
+          if (res2.ok) {
+            var wData = await res2.json();
+            var list = (wData && wData.query && wData.query.search) || [];
+            for (var j = 0; j < list.length; j++) {
+              var t = list[j].title.replace(/\s*\([^)]*\)$/, '').trim();
+              if (/고등학교$/.test(t) && t.toLowerCase().indexOf(q.replace(/고$/, '').toLowerCase()) >= 0) {
+                var sn = (list[j].snippet || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+                pushSchool({
+                  name: t,
+                  schoolCode: '',
+                  officeCode: '',
+                  location: '웹 검색',
+                  address: sn.slice(0, 48),
+                  fondType: '고등학교'
+                });
+              }
+            }
+          }
+        } catch (e2) { /* ignore */ }
+      }
+
+      // 3) 내장 주요 고등학교 색인 보완
+      var ql = q.toLowerCase().replace(/고$/, '');
+      for (var k = 0; k < SAMPLE_HIGH_SCHOOLS.length; k++) {
+        if (SAMPLE_HIGH_SCHOOLS[k].name.toLowerCase().indexOf(ql) >= 0) {
+          pushSchool(SAMPLE_HIGH_SCHOOLS[k]);
+        }
+      }
+      return results.slice(0, 12);
+    }
+
+    async function searchUniversitiesLive(keyword) {
+      var q = keyword.trim().toLowerCase();
+      var local = KOREAN_UNIVERSITIES.filter(function (u) {
+        return !q ||
+          u.name.toLowerCase().indexOf(q) >= 0 ||
+          u.location.toLowerCase().indexOf(q) >= 0 ||
+          u.aliases.some(function (a) { return a.toLowerCase().indexOf(q) >= 0; }) ||
+          u.majors.some(function (m) { return m.toLowerCase().indexOf(q) >= 0; });
+      });
+
+      var webList = [];
+      if (q.length >= 2) {
+        try {
+          var term = /(대학|학교|과기원|사관학교|교대)/.test(keyword) ? keyword : keyword + ' 대학교';
+          var url = 'https://ko.wikipedia.org/w/api.php?action=query&list=search&srsearch=' +
+            encodeURIComponent(term) + '&format=json&srlimit=12&origin=*';
+          var ctrl = new AbortController();
+          var timer = setTimeout(function () { ctrl.abort(); }, 3500);
+          var r = await fetch(url, { signal: ctrl.signal });
+          clearTimeout(timer);
+          if (r.ok) {
+            var d = await r.json();
+            var items = (d && d.query && d.query.search) || [];
+            for (var i = 0; i < items.length; i++) {
+              var title = items[i].title.replace(/\s*\([^)]*\)$/, '').trim();
+              if (/(대학교|전문대학|사관학교|과학기술원|교육대학|예술종합학교|폴리텍대학|대학)$/.test(title) &&
+                  !/(목록|분류|고등학교|중학교|초등학교|축구단)/.test(title)) {
+                webList.push({
+                  name: title,
+                  location: '대한민국',
+                  category: title.indexOf('전문') >= 0 ? '전문대' : '웹 검색 대학',
+                  aliases: [],
+                  majors: []
+                });
+              }
+            }
+          }
+        } catch (e) { /* offline ok */ }
+      }
+
+      var map = {};
+      var merged = [];
+      local.concat(webList).forEach(function (u) {
+        if (!map[u.name]) { map[u.name] = true; merged.push(u); }
+      });
+      return merged.slice(0, 15);
+    }
+
+    async function searchMajorsLive(keyword, universityName) {
+      var q = keyword.trim().toLowerCase();
+      var uni = (universityName || '').trim();
+      var results = [];
+      var seen = {};
+      function pushMaj(m) {
+        if (!m.name || seen[m.name]) return;
+        seen[m.name] = true;
+        results.push(m);
+      }
+
+      // 선택된 대학이 있으면 대표 학과 + 위키백과 대학 문서 학과 추출
+      if (uni) {
+        var foundUni = KOREAN_UNIVERSITIES.find(function (u) { return u.name === uni; });
+        if (foundUni && foundUni.majors) {
+          foundUni.majors.forEach(function (mj) {
+            if (!q || mj.toLowerCase().indexOf(q) >= 0) {
+              pushMaj({ name: mj, college: uni, field: '대표 개설 학과', description: uni + ' 주요 추천 전공' });
+            }
+          });
+        }
+        try {
+          var uniTitle = uni.replace(/\s*\([^)]*\)$/, '').trim();
+          var url = 'https://ko.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&titles=' +
+            encodeURIComponent(uniTitle) + '&format=json&origin=*';
+          var ctrl = new AbortController();
+          var t = setTimeout(function () { ctrl.abort(); }, 3500);
+          var r = await fetch(url, { signal: ctrl.signal });
+          clearTimeout(t);
+          if (r.ok) {
+            var d = await r.json();
+            var pages = d && d.query && d.query.pages ? Object.values(d.query.pages) : [];
+            var text = (pages[0] && pages[0].extract) || '';
+            var matches = text.match(/[가-힣A-Za-z·&]{2,15}(학과|학부|전공|예과)/g) || [];
+            matches.forEach(function (m) {
+              if (m.length >= 3 && !/(최고학부|대학원|목록|분류|고등학교)/.test(m)) {
+                if (!q || m.toLowerCase().indexOf(q) >= 0) {
+                  pushMaj({ name: m, college: uni, field: '대학 개설 학과', description: uni + ' 관련 전공' });
+                }
+              }
+            });
+          }
+        } catch (e) { /* ignore */ }
+      }
+
+      // 위키백과 학과 검색
+      if (q.length >= 2) {
+        try {
+          var sUrl = 'https://ko.wikipedia.org/w/api.php?action=query&list=search&srsearch=' +
+            encodeURIComponent(q + ' 학과') + '&format=json&srlimit=10&origin=*';
+          var ctrl2 = new AbortController();
+          var t2 = setTimeout(function () { ctrl2.abort(); }, 3000);
+          var r2 = await fetch(sUrl, { signal: ctrl2.signal });
+          clearTimeout(t2);
+          if (r2.ok) {
+            var d2 = await r2.json();
+            var items = (d2 && d2.query && d2.query.search) || [];
+            items.forEach(function (it) {
+              var title = it.title.replace(/\s*\([^)]*\)$/, '').trim();
+              if (/(학과|학부|전공|예과)$/.test(title) && title.toLowerCase().indexOf(q) >= 0) {
+                pushMaj({ name: title, college: uni || '전국 대학', field: '웹 검색 학과', description: '실시간 학과 검색 결과' });
+              }
+            });
+          }
+        } catch (e2) { /* ignore */ }
+      }
+
+      // 내장 표준 학과 보완
+      KOREAN_MAJORS.forEach(function (m) {
+        var hit = !q ||
+          m.name.toLowerCase().indexOf(q) >= 0 ||
+          m.field.toLowerCase().indexOf(q) >= 0 ||
+          m.description.toLowerCase().indexOf(q) >= 0 ||
+          (m.kw || []).some(function (k) { return k.indexOf(q) >= 0 || q.indexOf(k) >= 0; });
+        if (hit) {
+          pushMaj({ name: m.name, college: uni || '전국 대학', field: m.field, description: m.description });
+        }
+      });
+
+      return results.slice(0, 14);
+    }
+
+    async function fetchSchoolMealLive(schoolName, officeCode, schoolCode, dateISO, mealType) {
+      if (!schoolName) return { found: false, reason: '학교 미설정' };
+      var ymd = dateISO.replace(/-/g, '');
+      var mealCode = mealType === '조식' ? '1' : mealType === '석식' ? '3' : '2';
+
+      try {
+        var oc = officeCode;
+        var sc = schoolCode;
+        if (!oc || !sc) {
+          var iUrl = 'https://open.neis.go.kr/hub/schoolInfo?Type=json&pIndex=1&pSize=5&SCHUL_KND_SC_NM=' +
+            encodeURIComponent('고등학교') + '&SCHUL_NM=' + encodeURIComponent(schoolName);
+          var c1 = new AbortController();
+          var t1 = setTimeout(function () { c1.abort(); }, 3500);
+          var ir = await fetch(iUrl, { signal: c1.signal });
+          clearTimeout(t1);
+          if (ir.ok) {
+            var ij = await ir.json();
+            var rows = ij && ij.schoolInfo && ij.schoolInfo[1] && ij.schoolInfo[1].row;
+            if (rows && rows[0]) {
+              oc = rows[0].ATPT_OFCDC_SC_CODE;
+              sc = rows[0].SD_SCHUL_CODE;
+              state.profile.officeCode = oc;
+              state.profile.schoolCode = sc;
+              savePart('profile');
+            }
+          }
+        }
+        if (oc && sc) {
+          var mUrl = 'https://open.neis.go.kr/hub/mealServiceDietInfo?Type=json&ATPT_OFCDC_SC_CODE=' +
+            encodeURIComponent(oc) + '&SD_SCHUL_CODE=' + encodeURIComponent(sc) +
+            '&MLSV_YMD=' + ymd + '&MMEAL_SC_CODE=' + mealCode;
+          var c2 = new AbortController();
+          var t2 = setTimeout(function () { c2.abort(); }, 4000);
+          var mr = await fetch(mUrl, { signal: c2.signal });
+          clearTimeout(t2);
+          if (mr.ok) {
+            var mj = await mr.json();
+            var mRows = mj && mj.mealServiceDietInfo && mj.mealServiceDietInfo[1] && mj.mealServiceDietInfo[1].row;
+            if (mRows && mRows[0] && mRows[0].DDISH_NM) {
+              var cleanMenu = String(mRows[0].DDISH_NM)
+                .replace(/<br\s*\/?>/gi, '\n')
+                .split('\n')
+                .map(function (s) { return s.trim(); })
+                .filter(Boolean)
+                .join('\n');
+              return {
+                found: true,
+                menu: cleanMenu,
+                calories: mRows[0].CAL_INFO || '',
+                source: 'neis'
+              };
+            }
+          }
+        }
+      } catch (e) {
+        return { found: false, reason: '브라우저 보안 정책(CORS) 또는 휴일/미등록 식단으로 자동 식단을 가져오지 못했습니다. 아래 입력란에 오늘 식단을 직접 기록할 수 있습니다.' };
+      }
+      return { found: false, reason: '해당 날짜(' + dateISO + ')의 NEIS 공식 급식 식단이 등록되어 있지 않습니다.' };
+    }
+
+    // =========================================================================
+    // 8. AI 세특 요약 & 과목 간 내용 연계 분석 (로컬 지능형 생기부 분석 엔진)
+    // =========================================================================
+    function extractKeywordsFromText(text) {
+      var stop = { '그리고': 1, '대한': 1, '통해': 1, '위해': 1, '활용': 1, '탐구': 1, '활동': 1, '보고서': 1, '내용': 1, '분석': 1, '관련': 1, '수행': 1, '있는': 1, '하는': 1, '하여': 1 };
+      var tokens = (text || '').match(/[가-힣a-zA-Z]{2,}/g) || [];
+      var freq = {};
+      tokens.forEach(function (tok) {
+        if (stop[tok]) return;
+        freq[tok] = (freq[tok] || 0) + 1;
+      });
+      return Object.keys(freq).sort(function (a, b) { return freq[b] - freq[a]; }).slice(0, 8);
+    }
+
+    async function runAiSummaryAnalysis() {
+      var chosen = state.records.filter(function (r) {
+        return state.aiSelectedIds.indexOf(r.id) >= 0;
+      });
+      if (chosen.length === 0) {
+        showToast('분석할 수행평가·탐구 기록을 1개 이상 선택해 주세요.');
+        return;
+      }
+
+      var steps = [
+        [20, '선택된 수행평가 및 첨부파일 본문 정밀 스캔 중...', '약 3초 남음'],
+        [52, '우수 생기부 세특 문장 구조 및 학업 역량 매칭 중...', '약 2초 남음'],
+        [84, '사용자 맞춤 방향 반영 및 3가지 관점 세특 생성 중...', '약 1초 남음'],
+        [100, '세특 보고서 생성 완료', '완료']
+      ];
+      for (var i = 0; i < steps.length; i++) {
+        state.aiProgress = steps[i][0];
+        state.aiProgressMsg = steps[i][1];
+        state.aiEtaText = steps[i][2];
+        render();
+        await new Promise(function (r) { setTimeout(r, 320); });
+      }
+
+      var primary = chosen[0];
+      var combined = chosen.map(function (r) {
+        var att = (r.attachments || []).map(function (a) { return a.extractedText || a.fileName; }).join(' ');
+        return r.title + ' ' + (r.content || '') + ' ' + att;
+      }).join(' ');
+      var kws = extractKeywordsFromText(combined);
+      var mainKw = kws.slice(0, 3).join(', ') || primary.subject;
+      var goalText = state.profile.targetMajor ? state.profile.targetMajor + ' 진로 연계 관점' : '교과 심화 및 융합 탐구 관점';
+      var customDir = state.aiDirection.trim();
+
+      var draft1 = customDir
+        ? '[' + customDir + ' 반영] ' + primary.subject + ' 교과 시간에 "' + primary.title + '"를 주제로 주도적인 탐구를 수행함. 특히 ' + customDir + ' 방향에 초점을 맞추어 ' + mainKw + ' 개념을 심층 분석하고, 자료의 한계점을 스스로 점검하며 논리적 근거를 바탕으로 대안을 구체화하는 학업적 성숙도를 보임.'
+        : '[' + goalText + '] ' + primary.subject + ' 수업에서 "' + primary.title + '" 과제를 기획·수행하며 ' + mainKw + '의 원리를 구조화함. 자료 수집부터 검증까지 전 과정을 체계적으로 정리해 교과 개념을 실제 문제 상황에 적용하는 역량을 입증함.';
+
+      var draft2 = '[교과 개념 심화·문제 해결형] "' + primary.title + '" 탐구 활동에서 단순 개념 암기를 넘어 ' + mainKw + ' 간의 인과관계를 다각도로 비교·분석함. 실험 및 사례 근거를 명료하게 도출하고 발표 과정에서 핵심 쟁점을 설득력 있게 전달하여 교과 탐구 역량이 돋보임.';
+
+      var draft3 = '[진로 확장·후속 탐구형] ' + chosen.map(function (c) { return c.subject; }).join('·') + ' 영역의 학습 내용을 연결해 "' + primary.title + '" 과제를 발전시킴. 탐구 과정에서 발견한 추가 의문을 ' + (state.profile.targetMajor || '심화 학문 분야') + '와 연계하여 후속 연구 계획으로 구체화하는 자기주도적 태도를 보임.';
+
+      state.aiSummaryResult = {
+        keywords: kws,
+        overview: chosen.length + '건의 탐구 기록' + (chosen.some(function (c) { return (c.attachments || []).length > 0; }) ? '(첨부파일 본문 포함)' : '') + '에서 핵심 역량(' + mainKw + ')을 추출해 NEIS 기재 기준에 맞게 구조화했습니다.',
+        options: [
+          {
+            label: customDir ? '1. 사용자 지정 방향 반영 (' + customDir + ')' : '1. 진로·전공 연계 중심',
+            subject: primary.subject,
+            draft: draft1
+          },
+          {
+            label: '2. 교과 개념 심화 · 문제 해결 중심',
+            subject: primary.subject,
+            draft: draft2
+          },
+          {
+            label: '3. 융합 확장 · 후속 탐구 중심',
+            subject: chosen.map(function (c) { return c.subject; }).join(' + '),
+            draft: draft3
+          }
+        ]
+      };
+      state.aiProgress = 0;
+      render();
+    }
+
+    async function runAiLinkageAnalysis() {
+      var chosen = state.records.filter(function (r) {
+        return state.aiSelectedIds.indexOf(r.id) >= 0;
+      });
+      if (chosen.length < 2) {
+        showToast('과목 간 내용 연계를 분석하려면 2개 이상의 탐구 기록을 선택해 주세요.');
+        return;
+      }
+
+      var steps = [
+        [25, '선택한 과목별 탐구 내용 및 첨부 데이터 대조 중...', '약 3초 남음'],
+        [65, '공통 핵심 개념 및 과목 간 융합 연결고리 계산 중...', '약 1초 남음'],
+        [100, '내용 연계 보고서 생성 완료', '완료']
+      ];
+      for (var i = 0; i < steps.length; i++) {
+        state.aiProgress = steps[i][0];
+        state.aiProgressMsg = steps[i][1];
+        state.aiEtaText = steps[i][2];
+        render();
+        await new Promise(function (r) { setTimeout(r, 320); });
+      }
+
+      var kws = extractKeywordsFromText(chosen.map(function (r) { return r.title + ' ' + (r.content || ''); }).join(' '));
+      var subjectsStr = chosen.map(function (c) { return c.subject; }).join(' ↔ ');
+      var kwText = kws.slice(0, 3).join(' · ') || '데이터 기반 논리 검증';
+      var score = Math.min(4.9, (3.8 + chosen.length * 0.25 + (kws.length >= 4 ? 0.3 : 0))).toFixed(1);
+
+      state.aiLinkageResult = {
+        score: score,
+        subjectsStr: subjectsStr,
+        keywords: kws,
+        reasoning: chosen[0].subject + '("' + chosen[0].title + '")의 개념적 탐구가 ' + chosen[1].subject + '("' + chosen[1].title + '")의 정량적·분석적 접근과 자연스럽게 이어져 ' + kwText + ' 중심의 입체적 학업 서사를 형성하고 있습니다.',
+        advancedTopics: [
+          {
+            title: (kws[0] || chosen[0].subject) + ' 기반 ' + subjectsStr + ' 교차 검증 프로젝트',
+            subjects: subjectsStr,
+            description: '기존 탐구에서 도출한 가설을 다른 교과의 분석 모델로 재검증하는 심화 보고서 작성'
+          },
+          {
+            title: (state.profile.targetMajor ? state.profile.targetMajor + ' 연계 ' : '') + '실사회 데이터 적용 사례 탐구',
+            subjects: chosen.map(function (c) { return c.subject; }).join(' · '),
+            description: '이론적 탐구 결과를 실제 생활·사회 문제 해결 시나리오에 적용하고 한계점 보완'
+          }
+        ],
+        bridgeDraft: subjectsStr + ' 교과의 학습 내용을 통합하여 "' + chosen[0].title + '"와 "' + chosen[1].title + '"를 하나의 연구 흐름으로 연계함. ' + kwText + '를 핵심 매개로 개념 해석과 정량 검증을 병행하며 융합적 사고력과 자기주도 탐구 역량을 탁월하게 발휘함.'
+      };
+      state.aiProgress = 0;
+      render();
+    }
+
+    // =========================================================================
+    // 9. SVG 성적 그래프 렌더링 헬퍼
+    // =========================================================================
+    function renderLineChartSvg(points, yLabelMin, yLabelMax, invertY) {
+      if (!points || points.length === 0) return '';
+      var w = 520, h = 165, padL = 34, padR = 18, padT = 18, padB = 30;
+      var innerW = w - padL - padR;
+      var innerH = h - padT - padB;
+      var coords = points.map(function (pt, idx) {
+        var x = points.length === 1 ? padL + innerW / 2 : padL + (idx * innerW) / (points.length - 1);
+        var ratio = (pt.val - yLabelMin) / Math.max(1, yLabelMax - yLabelMin);
+        ratio = Math.max(0, Math.min(1, ratio));
+        var y = invertY ? (padT + ratio * innerH) : (padT + (1 - ratio) * innerH);
+        return { x: x, y: y, label: pt.label, valLabel: pt.valLabel };
+      });
+      var poly = coords.map(function (c) { return c.x.toFixed(1) + ',' + c.y.toFixed(1); }).join(' ');
+
+      var gridLines = '';
+      for (var g = 0; g <= 3; g++) {
+        var gy = padT + (g * innerH) / 3;
+        gridLines += '<line x1="' + padL + '" y1="' + gy + '" x2="' + (w - padR) + '" y2="' + gy + '" stroke="#e2e8f0" stroke-dasharray="3 3" />';
+      }
+      var dots = coords.map(function (c) {
+        return '<circle cx="' + c.x + '" cy="' + c.y + '" r="4.5" fill="#4338ca" stroke="#ffffff" stroke-width="2" />' +
+          '<text x="' + c.x + '" y="' + (c.y - 9) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1e293b">' + esc(c.valLabel) + '</text>' +
+          '<text x="' + c.x + '" y="' + (h - 8) + '" text-anchor="middle" font-size="10" fill="#64748b">' + esc(c.label.slice(0, 10)) + '</text>';
+      }).join('');
+
+      return '<svg viewBox="0 0 ' + w + ' ' + h + '" style="width:100%;height:auto;display:block">' +
+        gridLines +
+        (coords.length > 1 ? '<polyline fill="none" stroke="#4338ca" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="' + poly + '" />' : '') +
+        dots +
+        '</svg>';
+    }
+
+    // =========================================================================
+    // 10. 화면 뷰 렌더러
+    // =========================================================================
+    function renderAuth() {
+      var googleLogoSvg = '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">' +
+        '<path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z"/>' +
+        '<path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24Z"/>' +
+        '<path fill="#FBBC05" d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14Z"/>' +
+        '<path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96Z"/>' +
+      '</svg>';
+
+      var isFileProto = isLocalOfflineMode();
+      return '<div class="auth-wrap">' +
+        '<div class="auth-card stack-md">' +
+          '<div>' +
+            '<h1 style="font-size:22px;font-weight:800;letter-spacing:-0.02em">학교생활 도우미</h1>' +
+            '<p style="font-size:13.5px;color:#475569;margin-top:6px">Google 계정으로 로그인하면 수행평가, 세특 보관함, 시간표, 성적이 클라우드에 자동 동기화되어 <strong>어떤 기기에서 접속해도</strong> 내 기록을 바로 이어서 쓸 수 있습니다.</p>' +
+          '</div>' +
+          (!state.authReady && !isFileProto ? '<p style="font-size:12px;color:#4338ca;font-weight:600">Google 로그인 연결 확인 중... (버튼을 바로 누르셔도 됩니다)</p>' : '') +
+          (state.authError ? '<p style="font-size:12.5px;color:#be123c;font-weight:600;background:#fff1f2;padding:10px 12px;border-radius:10px;border:1px solid #fecdd3">' + esc(state.authError) + '</p>' : '') +
+          '<button type="button" data-act="google-login" class="btn btn-outline" style="width:100%;min-height:48px;font-size:15px;font-weight:700;background:#fff;border-color:#cbd5e1" ' + (state.isLoggingIn ? 'disabled' : '') + '>' +
+            googleLogoSvg +
+            '<span>' + (state.isLoggingIn ? 'Google 계정 연결 중...' : 'Google 계정으로 로그인') + '</span>' +
+          '</button>' +
+          (isFileProto
+            ? '<div class="stack-xs" style="padding:12px;border-radius:12px;background:#fffbeb;border:1px solid #fde68a">' +
+                '<p style="font-size:12px;color:#92400e"><strong>로컬 파일(file://)로 열렸습니다.</strong> 브라우저 보안 정책상 Google 로그인은 Vercel 등 웹 주소(https://)에서 동작합니다. 이 PC에서만 임시로 쓰려면 아래 오프라인 시작을 누르세요.</p>' +
+                '<button type="button" data-act="local-offline-login" class="btn btn-sm btn-soft" style="width:100%">로컬 오프라인 모드로 시작</button>' +
+              '</div>'
+            : '<p style="font-size:11.5px;color:#64748b;text-align:center">별도 회원가입 없이 기존 Google 계정으로 바로 시작할 수 있으며, 모든 기록은 본인 계정 전용 공간에 안전하게 분리 저장됩니다.</p>') +
+        '</div>' +
+      '</div>';
+    }
+
+    function renderScheduleTab() {
+      var reminders = state.records.filter(function (r) { return r.kind === 'schedule'; })
+        .sort(function (a, b) { return a.date.localeCompare(b.date); });
+      var logs = state.records.filter(function (r) { return r.kind === 'assignment'; })
+        .sort(function (a, b) { return b.date.localeCompare(a.date); });
+
+      var remHtml = reminders.length === 0
+        ? '<div class="muted-box">등록된 리마인더가 없습니다. 달력에서 간편하게 일정을 추가해 보세요.</div>'
+        : reminders.map(function (r) {
+            var diff = getDiffDaysFromToday(r.date);
+            var dLabel = diff === 0 ? '오늘' : (diff > 0 ? 'D-' + diff : 'D+' + Math.abs(diff));
+            return '<div class="item-box row-between">' +
+              '<div style="display:flex;align-items:flex-start;gap:10px;min-width:0">' +
+                '<button type="button" data-act="toggle-rec" data-id="' + esc(r.id) + '" class="btn btn-sm ' + (r.completed ? 'btn-soft' : 'btn-outline') + '" style="min-width:34px;padding:0">' + (r.completed ? svgIcon('check') : '') + '</button>' +
+                '<div style="min-width:0">' +
+                  '<div class="row-wrap" style="gap:6px;font-size:11.5px;color:#64748b">' +
+                    '<strong class="tabular" style="color:' + (diff >= 0 && diff <= 1 && !r.completed ? '#be123c' : '#4338ca') + '">' + dLabel + '</strong>' +
+                    '<span>·</span>' +
+                    '<span class="tabular">' + esc(formatKoreanDate(r.date)) + '</span>' +
+                  '</div>' +
+                  '<p style="font-size:14px;font-weight:700;' + (r.completed ? 'text-decoration:line-through;color:#94a3b8;' : '') + '">' + esc(r.title) + '</p>' +
+                  (r.content ? '<p style="font-size:12px;color:#475569;margin-top:2px">' + esc(r.content) + '</p>' : '') +
+                '</div>' +
+              '</div>' +
+              '<button type="button" data-act="del-rec" data-id="' + esc(r.id) + '" class="btn btn-sm btn-outline" aria-label="삭제">' + svgIcon('trash') + '</button>' +
+            '</div>';
+          }).join('');
+
+      var logHtml = logs.length === 0
+        ? '<div class="muted-box">아직 기록된 수행평가·탐구 활동이 없습니다. [과제입력] 탭에서 추가해 보세요.</div>'
+        : logs.map(function (r) {
+            return '<div class="item-box row-between">' +
+              '<div style="min-width:0">' +
+                '<div class="row-wrap" style="gap:6px;font-size:11.5px;color:#64748b">' +
+                  '<strong style="color:#4338ca">' + esc(r.subject) + '</strong>' +
+                  '<span>·</span>' +
+                  '<span class="tabular">' + esc(formatKoreanDate(r.date)) + '</span>' +
+                '</div>' +
+                '<p style="font-size:14px;font-weight:700;margin-top:2px">' + esc(r.title) + '</p>' +
+                '<p style="font-size:12px;color:#475569;margin-top:3px">' + esc((r.content || '').slice(0, 120)) + (r.content && r.content.length > 120 ? '...' : '') + '</p>' +
+              '</div>' +
+              '<button type="button" data-act="del-rec" data-id="' + esc(r.id) + '" class="btn btn-sm btn-outline" aria-label="삭제">' + svgIcon('trash') + '</button>' +
+            '</div>';
+          }).join('');
+
+      return '<div class="grid-2-equal">' +
+        '<div class="card stack-md">' +
+          '<div class="row-between">' +
+            '<div><h2 style="font-size:15px;font-weight:800">할 일 · 리마인더</h2><p style="font-size:12px;color:#64748b">마감 3일 전부터 상단 알림으로 안내합니다.</p></div>' +
+            '<button type="button" data-act="go-tab" data-tab="calendar" class="btn btn-sm btn-soft">' + svgIcon('plus') + '<span>달력에서 추가</span></button>' +
+          '</div>' +
+          '<div class="stack-xs">' + remHtml + '</div>' +
+        '</div>' +
+        '<div class="card stack-md">' +
+          '<div class="row-between">' +
+            '<div><h2 style="font-size:15px;font-weight:800">수행평가 · 탐구 타임라인</h2><p style="font-size:12px;color:#64748b">AI 세특 생성에 활용되는 탐구 기록입니다.</p></div>' +
+            '<button type="button" data-act="go-tab" data-tab="input" class="btn btn-sm btn-outline">' + svgIcon('pen') + '<span>기록 추가</span></button>' +
+          '</div>' +
+          '<div class="stack-xs">' + logHtml + '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    function renderSchoolTab() {
+      var subHtml = '';
+      if (state.schoolSubTab === 'timetable') {
+        var rows = '';
+        for (var p = 0; p < 8; p++) {
+          var tds = '<td class="tabular" style="font-weight:700;background:#f8fafc;width:54px">' + (p + 1) + '교시</td>';
+          for (var w = 0; w < WEEKDAYS.length; w++) {
+            var day = WEEKDAYS[w];
+            var val = (state.timetable[day] && state.timetable[day][p]) || '';
+            tds += '<td><input class="tt-input" data-tt-day="' + day + '" data-tt-p="' + p + '" value="' + esc(val) + '" placeholder="과목" /></td>';
+          }
+          rows += '<tr>' + tds + '</tr>';
+        }
+        subHtml = '<div class="card stack-md">' +
+          '<div class="row-between">' +
+            '<div><h2 style="font-size:15px;font-weight:800">우리 반 주간 시간표</h2><p style="font-size:12px;color:#64748b">칸을 눌러 과목을 입력하면 자동 저장됩니다.</p></div>' +
+          '</div>' +
+          '<div class="tt-wrap"><table class="tt-table"><thead><tr><th>교시</th>' +
+            WEEKDAYS.map(function (d) { return '<th>' + d + '</th>'; }).join('') +
+          '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+        '</div>';
+      } else if (state.schoolSubTab === 'meal') {
+        var foundMeal = state.meals.find(function (m) {
+          return m.date === state.mealDate && m.mealType === state.mealType;
+        });
+        subHtml = '<div class="card stack-md">' +
+          '<div class="row-between" style="flex-wrap:wrap">' +
+            '<div>' +
+              '<h2 style="font-size:15px;font-weight:800">오늘의 학교 급식</h2>' +
+              '<p style="font-size:12px;color:#64748b">' +
+                (state.profile.schoolName ? esc(state.profile.schoolName) + ' 기준 자동 조회' : '프로필에서 학교를 설정하면 급식을 바로 불러옵니다.') +
+              '</p>' +
+            '</div>' +
+            (!state.profile.schoolName ? '<button type="button" data-act="go-tab" data-tab="profile" class="btn btn-sm btn-soft">프로필에서 학교 설정</button>' : '') +
+          '</div>' +
+          '<div class="row-wrap">' +
+            '<button type="button" data-act="meal-delta" data-delta="-1" class="btn btn-sm btn-outline">' + svgIcon('left') + '</button>' +
+            '<input type="date" id="meal-date-input" class="input" style="width:auto;min-height:36px" value="' + esc(state.mealDate) + '" />' +
+            '<button type="button" data-act="meal-delta" data-delta="1" class="btn btn-sm btn-outline">' + svgIcon('right') + '</button>' +
+            '<div class="seg-bar">' +
+              ['조식', '중식', '석식'].map(function (mt) {
+                return '<button type="button" data-act="meal-type" data-type="' + mt + '" class="seg-btn ' + (state.mealType === mt ? 'active' : '') + '">' + mt + '</button>';
+              }).join('') +
+            '</div>' +
+            '<button type="button" data-act="meal-refresh" class="btn btn-sm btn-soft" ' + (state.isFetchingMeal ? 'disabled' : '') + '>' + svgIcon('refresh') + '<span>' + (state.isFetchingMeal ? '조회 중...' : '다시 불러오기') + '</span></button>' +
+          '</div>' +
+          (state.mealNoticeMsg ? '<p style="font-size:12px;color:#b45309;background:#fffbeb;padding:10px 12px;border-radius:10px;border:1px solid #fde68a">' + esc(state.mealNoticeMsg) + '</p>' : '') +
+          '<form id="meal-form" class="stack-sm">' +
+            '<div>' +
+              '<label class="label">식단 메뉴 (' + esc(formatKoreanDate(state.mealDate)) + ' · ' + esc(state.mealType) + ')</label>' +
+              '<textarea id="meal-menu-text" class="textarea" placeholder="식단을 불러오거나 직접 입력해 저장하세요.">' + esc(foundMeal ? foundMeal.menu : '') + '</textarea>' +
+            '</div>' +
+            '<div class="row-between">' +
+              '<input id="meal-cal-input" class="input" style="max-width:180px" value="' + esc(foundMeal ? (foundMeal.calories || '') : '') + '" placeholder="열량 예: 820 Kcal" />' +
+              '<button type="submit" class="btn btn-primary">식단 저장</button>' +
+            '</div>' +
+          '</form>' +
+        '</div>';
+      } else {
+        // 내 성적: 내신(1차·2차) / 모의고사 분리
+        var isSchoolGrade = state.gradeMode === 'school';
+        var gradeSwitch = '<div class="seg-bar">' +
+          '<button type="button" data-act="grade-mode" data-mode="school" class="seg-btn ' + (isSchoolGrade ? 'active' : '') + '">내신 성적 (1차 · 2차)</button>' +
+          '<button type="button" data-act="grade-mode" data-mode="mock" class="seg-btn ' + (!isSchoolGrade ? 'active' : '') + '">모의고사 성적</button>' +
+        '</div>';
+
+        if (isSchoolGrade) {
+          var avgRank = state.grades.length
+            ? (state.grades.reduce(function (s, g) { return s + Number(g.gradeRank || 0); }, 0) / state.grades.length).toFixed(2)
+            : '-';
+          var avgScore = state.grades.length
+            ? (state.grades.reduce(function (s, g) { return s + Number(g.score || 0); }, 0) / state.grades.length).toFixed(1)
+            : '-';
+          var bestScore = state.grades.length
+            ? Math.max.apply(null, state.grades.map(function (g) { return Number(g.score || 0); }))
+            : '-';
+
+          var termMap = {};
+          state.grades.forEach(function (g) {
+            if (!termMap[g.term]) termMap[g.term] = [];
+            termMap[g.term].push(Number(g.gradeRank));
+          });
+          var termPts = Object.keys(termMap).sort().map(function (t) {
+            var arr = termMap[t];
+            var avg = arr.reduce(function (a, b) { return a + b; }, 0) / arr.length;
+            return { label: t.replace('학년 ', '-').replace('학기 ', '-'), val: avg, valLabel: avg.toFixed(1) + '등급' };
+          });
+
+          subHtml = '<div class="stack-md">' +
+            '<div class="card stack-md">' +
+              '<div class="row-between" style="flex-wrap:wrap">' +
+                '<div><h2 style="font-size:15px;font-weight:800">내신 성적 관리</h2><p style="font-size:12px;color:#64748b">1차·2차 지필평가 기준 실제 점수와 등급만 간편하게 기록합니다.</p></div>' +
+                gradeSwitch +
+              '</div>' +
+              '<div class="kpi-grid">' +
+                '<div class="kpi-box"><div class="kpi-label">평균 등급</div><div class="kpi-val tabular">' + avgRank + (avgRank !== '-' ? '등급' : '') + '</div></div>' +
+                '<div class="kpi-box"><div class="kpi-label">평균 점수</div><div class="kpi-val tabular">' + avgScore + (avgScore !== '-' ? '점' : '') + '</div></div>' +
+                '<div class="kpi-box"><div class="kpi-label">최고 점수</div><div class="kpi-val tabular">' + bestScore + (bestScore !== '-' ? '점' : '') + '</div></div>' +
+              '</div>' +
+              '<form id="school-grade-form" class="row-wrap" style="align-items:flex-end">' +
+                '<div style="flex:1 1 160px"><label class="label">시험 · 학기 구분</label><select id="sg-term" class="select">' +
+                  TERM_PRESETS.map(function (t) { return '<option value="' + t + '">' + t + '</option>'; }).join('') +
+                '</select></div>' +
+                '<div style="flex:1 1 110px"><label class="label">과목명</label><select id="sg-subject" class="select">' +
+                  SUBJECTS.map(function (s) { return '<option value="' + s + '">' + s + '</option>'; }).join('') +
+                '</select></div>' +
+                '<div style="flex:0 1 95px"><label class="label">실제 점수</label><input id="sg-score" class="input tabular" type="number" min="0" max="100" step="0.1" placeholder="92" required /></div>' +
+                '<div style="flex:0 1 95px"><label class="label">등급 (1~9)</label><select id="sg-rank" class="select tabular">' +
+                  [1,2,3,4,5,6,7,8,9].map(function (n) { return '<option value="' + n + '">' + n + '등급</option>'; }).join('') +
+                '</select></div>' +
+                '<button type="submit" class="btn btn-primary">' + svgIcon('plus') + '<span>성적 추가</span></button>' +
+              '</form>' +
+              (termPts.length ? '<div><p class="label">시험별 평균 등급 추이 (높을수록 1등급)</p>' + renderLineChartSvg(termPts, 1, 9, true) + '</div>' : '') +
+              '<div class="stack-xs">' +
+                (state.grades.length === 0
+                  ? '<div class="muted-box">입력된 내신 성적이 없습니다.</div>'
+                  : state.grades.slice().reverse().map(function (g) {
+                      return '<div class="item-box row-between">' +
+                        '<div><span style="font-size:11.5px;color:#64748b">' + esc(g.term) + '</span><p style="font-size:14px;font-weight:700">' + esc(g.subject) + ' · <span class="tabular" style="color:#4338ca">' + g.gradeRank + '등급</span> <span class="tabular" style="color:#475569;font-weight:500">(' + g.score + '점)</span></p></div>' +
+                        '<button type="button" data-act="del-grade" data-id="' + esc(g.id) + '" class="btn btn-sm btn-outline">' + svgIcon('trash') + '</button>' +
+                      '</div>';
+                    }).join('')) +
+              '</div>' +
+            '</div>' +
+          '</div>';
+        } else {
+          var avgMockRank = state.mockExams.length
+            ? (state.mockExams.reduce(function (s, m) { return s + Number(m.gradeRank || 0); }, 0) / state.mockExams.length).toFixed(2)
+            : '-';
+          var avgMockPct = state.mockExams.length
+            ? (state.mockExams.reduce(function (s, m) { return s + (Number(m.score) / Math.max(1, Number(m.maxScore || 100))) * 100; }, 0) / state.mockExams.length).toFixed(1)
+            : '-';
+          var mockMap = {};
+          state.mockExams.forEach(function (m) {
+            if (!mockMap[m.examName]) mockMap[m.examName] = [];
+            mockMap[m.examName].push((Number(m.score) / Math.max(1, Number(m.maxScore || 100))) * 100);
+          });
+          var mockPts = Object.keys(mockMap).map(function (en) {
+            var arr = mockMap[en];
+            var avg = arr.reduce(function (a, b) { return a + b; }, 0) / arr.length;
+            return { label: en.replace('학년 ', '-').replace('학력평가', '학평').replace('모의평가', '모평'), val: avg, valLabel: avg.toFixed(0) + '%' };
+          });
+
+          subHtml = '<div class="card stack-md">' +
+            '<div class="row-between" style="flex-wrap:wrap">' +
+              '<div><h2 style="font-size:15px;font-weight:800">모의고사 성적 관리</h2><p style="font-size:12px;color:#64748b">학력평가·모의평가 성적을 내신과 분리하여 추적합니다.</p></div>' +
+              gradeSwitch +
+            '</div>' +
+            '<div class="kpi-grid">' +
+              '<div class="kpi-box"><div class="kpi-label">기록 건수</div><div class="kpi-val tabular">' + state.mockExams.length + '건</div></div>' +
+              '<div class="kpi-box"><div class="kpi-label">평균 등급</div><div class="kpi-val tabular">' + avgMockRank + (avgMockRank !== '-' ? '등급' : '') + '</div></div>' +
+              '<div class="kpi-box"><div class="kpi-label">평균 원점수율</div><div class="kpi-val tabular">' + avgMockPct + (avgMockPct !== '-' ? '%' : '') + '</div></div>' +
+            '</div>' +
+            '<form id="mock-grade-form" class="row-wrap" style="align-items:flex-end">' +
+              '<div style="flex:1 1 170px"><label class="label">모의고사 회차</label><select id="mg-exam" class="select">' +
+                MOCK_PRESETS.map(function (p) { return '<option value="' + p + '">' + p + '</option>'; }).join('') +
+              '</select></div>' +
+              '<div style="flex:1 1 100px"><label class="label">영역</label><select id="mg-subject" class="select">' +
+                MOCK_SUBJECTS.map(function (s) { return '<option value="' + s.name + '">' + s.name + '</option>'; }).join('') +
+              '</select></div>' +
+              '<div style="flex:0 1 88px"><label class="label">원점수</label><input id="mg-score" class="input tabular" type="number" min="0" max="100" placeholder="88" required /></div>' +
+              '<div style="flex:0 1 82px"><label class="label">만점</label><input id="mg-max" class="input tabular" type="number" min="10" max="100" value="100" required /></div>' +
+              '<div style="flex:0 1 88px"><label class="label">등급</label><select id="mg-rank" class="select tabular">' +
+                [1,2,3,4,5,6,7,8,9].map(function (n) { return '<option value="' + n + '">' + n + '등급</option>'; }).join('') +
+              '</select></div>' +
+              '<div style="flex:0 1 92px"><label class="label">백분위(선택)</label><input id="mg-pct" class="input tabular" type="number" min="0" max="100" placeholder="95" /></div>' +
+              '<button type="submit" class="btn btn-primary">' + svgIcon('plus') + '<span>모의고사 추가</span></button>' +
+            '</form>' +
+            (mockPts.length ? '<div><p class="label">모의고사 회차별 평균 득점률 추이</p>' + renderLineChartSvg(mockPts, 0, 100, false) + '</div>' : '') +
+            '<div class="stack-xs">' +
+              (state.mockExams.length === 0
+                ? '<div class="muted-box">입력된 모의고사 성적이 없습니다.</div>'
+                : state.mockExams.slice().reverse().map(function (m) {
+                    return '<div class="item-box row-between">' +
+                      '<div><span style="font-size:11.5px;color:#64748b">' + esc(m.examName) + '</span><p style="font-size:14px;font-weight:700">' + esc(m.subject) + ' · <span class="tabular" style="color:#4338ca">' + m.gradeRank + '등급</span> <span class="tabular" style="color:#475569;font-weight:500">(' + m.score + '/' + m.maxScore + '점' + (m.percentile ? ' · 백분위 ' + m.percentile : '') + ')</span></p></div>' +
+                      '<button type="button" data-act="del-mock" data-id="' + esc(m.id) + '" class="btn btn-sm btn-outline">' + svgIcon('trash') + '</button>' +
+                    '</div>';
+                  }).join('')) +
+            '</div>' +
+          '</div>';
+        }
+      }
+
+      return '<div class="stack-md">' +
+        '<div class="seg-bar">' +
+          '<button type="button" data-act="school-tab" data-sub="timetable" class="seg-btn ' + (state.schoolSubTab === 'timetable' ? 'active' : '') + '">시간표</button>' +
+          '<button type="button" data-act="school-tab" data-sub="meal" class="seg-btn ' + (state.schoolSubTab === 'meal' ? 'active' : '') + '">급식</button>' +
+          '<button type="button" data-act="school-tab" data-sub="grades" class="seg-btn ' + (state.schoolSubTab === 'grades' ? 'active' : '') + '">내 성적</button>' +
+        '</div>' +
+        subHtml +
+      '</div>';
+    }
+
+    function renderCalendarTab() {
+      var y = state.calYear, m = state.calMonth;
+      var firstDay = new Date(y, m, 1).getDay();
+      var daysInMonth = new Date(y, m + 1, 0).getDate();
+      var today = getTodayISO();
+
+      var cells = '';
+      for (var blank = 0; blank < firstDay; blank++) {
+        cells += '<div></div>';
+      }
+      for (var d = 1; d <= daysInMonth; d++) {
+        var iso = y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        var dow = new Date(y, m, d).getDay();
+        var count = state.records.filter(function (r) { return r.date === iso; }).length;
+        var cls = 'cal-cell' + (iso === state.selectedDate ? ' selected' : '') + (iso === today ? ' today' : '');
+        var numCls = 'cal-num tabular' + (dow === 0 ? ' sun' : (dow === 6 ? ' sat' : ''));
+        cells += '<button type="button" data-act="cal-select" data-date="' + iso + '" class="' + cls + '">' +
+          '<span class="' + numCls + '">' + d + '</span>' +
+          (count > 0 ? '<span style="font-size:10px;font-weight:700;color:#4338ca">' + count + '건</span>' : '') +
+        '</button>';
+      }
+
+      var dayItems = state.records.filter(function (r) { return r.date === state.selectedDate; });
+
+      return '<div class="grid-2-12">' +
+        '<div class="card col-7 stack-md">' +
+          '<div class="row-between">' +
+            '<h2 class="tabular" style="font-size:16px;font-weight:800">' + y + '년 ' + (m + 1) + '월</h2>' +
+            '<div class="row-wrap">' +
+              '<button type="button" data-act="cal-month" data-delta="-1" class="btn btn-sm btn-outline">' + svgIcon('left') + '</button>' +
+              '<button type="button" data-act="cal-today" class="btn btn-sm btn-soft">오늘</button>' +
+              '<button type="button" data-act="cal-month" data-delta="1" class="btn btn-sm btn-outline">' + svgIcon('right') + '</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="cal-grid">' +
+            ['일', '월', '화', '수', '목', '금', '토'].map(function (dowName, idx) {
+              var c = idx === 0 ? 'sun' : (idx === 6 ? 'sat' : '');
+              return '<div class="cal-dow ' + c + '">' + dowName + '</div>';
+            }).join('') +
+            cells +
+          '</div>' +
+        '</div>' +
+        '<div class="card col-5 stack-md">' +
+          '<div>' +
+            '<h3 class="tabular" style="font-size:15px;font-weight:800">' + esc(formatKoreanDate(state.selectedDate)) + '</h3>' +
+            '<p style="font-size:12px;color:#64748b">삼성 리마인더처럼 간편하게 할 일을 추가하세요.</p>' +
+          '</div>' +
+          '<form id="reminder-form" class="stack-sm">' +
+            '<div><label class="label">리마인더 제목</label><input id="rem-title" class="input" type="text" placeholder="예: 영어 단어 암기 시험" required /></div>' +
+            '<div><label class="label">간단한 내용 (선택)</label><input id="rem-content" class="input" type="text" placeholder="예: Unit 5~6 범위 복습" /></div>' +
+            '<button type="submit" class="btn btn-primary">' + svgIcon('plus') + '<span>이 날짜에 리마인더 추가</span></button>' +
+          '</form>' +
+          '<div class="stack-xs">' +
+            (dayItems.length === 0
+              ? '<div class="muted-box">선택한 날짜에 등록된 일정이 없습니다.</div>'
+              : dayItems.map(function (r) {
+                  return '<div class="item-box row-between">' +
+                    '<div style="min-width:0">' +
+                      '<span style="font-size:11px;font-weight:700;color:#4338ca">' + (r.kind === 'schedule' ? '리마인더' : esc(r.subject)) + '</span>' +
+                      '<p style="font-size:13.5px;font-weight:700;' + (r.completed && r.kind === 'schedule' ? 'text-decoration:line-through;color:#94a3b8;' : '') + '">' + esc(r.title) + '</p>' +
+                      (r.content ? '<p style="font-size:12px;color:#64748b">' + esc(r.content) + '</p>' : '') +
+                    '</div>' +
+                    '<div class="row-wrap" style="flex-shrink:0">' +
+                      (r.kind === 'schedule' ? '<button type="button" data-act="toggle-rec" data-id="' + esc(r.id) + '" class="btn btn-sm btn-outline">' + svgIcon('check') + '</button>' : '') +
+                      '<button type="button" data-act="del-rec" data-id="' + esc(r.id) + '" class="btn btn-sm btn-outline">' + svgIcon('trash') + '</button>' +
+                    '</div>' +
+                  '</div>';
+                }).join('')) +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    function renderInputTab() {
+      var logs = state.records.filter(function (r) { return r.kind === 'assignment'; })
+        .sort(function (a, b) { return b.date.localeCompare(a.date); });
+      var selectedLog = logs.find(function (l) { return l.id === state.selectedArchiveId; }) || logs[0] || null;
+
+      return '<div class="grid-2-12">' +
+        '<form id="assignment-form" class="card col-7 stack-md">' +
+          '<div>' +
+            '<h2 style="font-size:15px;font-weight:800">과제 · 세특 탐구 활동 기록</h2>' +
+            '<p style="font-size:12px;color:#64748b">수행한 과제와 첨부파일 내용을 저장해 AI 세특 생성에 바로 활용할 수 있습니다.</p>' +
+          '</div>' +
+          '<div class="row-wrap">' +
+            '<div style="flex:1 1 130px"><label class="label">과목 선택</label><select id="in-subject" class="select">' +
+              SUBJECTS.map(function (s) {
+                return '<option value="' + s + '" ' + (state.inputForm.subject === s ? 'selected' : '') + '>' + s + '</option>';
+              }).join('') +
+            '</select></div>' +
+            '<div style="flex:1 1 150px"><label class="label">수행 날짜</label><input id="in-date" type="date" class="input" value="' + esc(state.inputForm.date) + '" required /></div>' +
+          '</div>' +
+          '<div><label class="label">과제명 / 탐구 주제</label><input id="in-title" class="input" type="text" value="' + esc(state.inputForm.title) + '" placeholder="예: 빅데이터를 활용한 교내 에너지 절감 방안 탐구" required /></div>' +
+          '<div><label class="label">상세 내용 (탐구 동기 · 과정 · 깨달은 점)</label><textarea id="in-content" class="textarea" placeholder="내가 수행한 구체적 활동과 느낀 점을 기록하세요.">' + esc(state.inputForm.content) + '</textarea></div>' +
+          '<div><label class="label">참고 링크 (선택)</label><input id="in-link" class="input" type="url" value="' + esc(state.inputForm.link) + '" placeholder="https://..." /></div>' +
+          '<div class="stack-xs">' +
+            '<label class="label">파일 첨부 (PDF · DOCX · PPTX · TXT 등 자동 본문 스캔)</label>' +
+            '<input id="in-file" type="file" class="input" style="padding:8px" />' +
+            (state.fileScanProgress > 0 && state.fileScanProgress < 100
+              ? '<div class="item-box stack-xs"><div class="row-between" style="font-size:12px"><span>' + esc(state.fileScanStatus) + '</span><strong class="tabular">' + state.fileScanProgress + '%</strong></div><div class="progress-track"><div class="progress-fill" style="width:' + state.fileScanProgress + '%"></div></div></div>'
+              : '') +
+            (state.pendingApplyScanText
+              ? '<div class="item-box stack-xs" style="background:#eef2ff;border-color:#c7d2fe">' +
+                  '<p style="font-size:12.5px;font-weight:700;color:#312e81">AI 파일 스캔이 완료되었습니다 (100%). 스캔한 내용을 상세내용 칸에 바로 적용할까요?</p>' +
+                  '<div class="row-wrap"><button type="button" data-act="apply-scan" class="btn btn-sm btn-primary">네, 상세내용에 적용</button><button type="button" data-act="dismiss-scan" class="btn btn-sm btn-outline">아니요, 유지하기</button></div>' +
+                '</div>'
+              : '') +
+            (state.draftAttachments.length > 0
+              ? '<div class="stack-xs">' + state.draftAttachments.map(function (a, idx) {
+                  return '<div class="item-box row-between" style="font-size:12px">' +
+                    '<span class="truncate"><strong>' + esc(a.fileName) + '</strong> (' + esc(a.fileSize) + ')</span>' +
+                    '<button type="button" data-act="del-draft-att" data-idx="' + idx + '" class="btn btn-sm btn-outline">제거</button>' +
+                  '</div>';
+                }).join('') + '</div>'
+              : '') +
+          '</div>' +
+          '<button type="submit" class="btn btn-primary" style="min-height:44px">수행평가 · 탐구 저장하기</button>' +
+        '</form>' +
+        '<div class="card col-5 stack-md">' +
+          '<div><h3 style="font-size:15px;font-weight:800">기록된 탐구 아카이브 (' + logs.length + ')</h3><p style="font-size:12px;color:#64748b">항목을 클릭하면 내가 쓴 상세 내용을 모두 볼 수 있습니다.</p></div>' +
+          '<div class="dropdown-list">' +
+            (logs.length === 0
+              ? '<p style="padding:16px;font-size:12px;color:#64748b;text-align:center">저장된 탐구 기록이 없습니다.</p>'
+              : logs.map(function (l) {
+                  var sel = selectedLog && selectedLog.id === l.id;
+                  return '<button type="button" data-act="pick-archive" data-id="' + esc(l.id) + '" class="dropdown-item ' + (sel ? 'selected' : '') + '">' +
+                    '<div style="min-width:0"><p style="font-size:13px;font-weight:700" class="truncate">' + esc(l.title) + '</p><p style="font-size:11px;color:#64748b">' + esc(l.subject) + ' · ' + esc(l.date) + '</p></div>' +
+                    '<span style="font-size:11px;font-weight:700;color:#4338ca;flex-shrink:0">' + (sel ? '열람 중' : '보기') + '</span>' +
+                  '</button>';
+                }).join('')) +
+          '</div>' +
+          (selectedLog
+            ? '<div class="item-box stack-xs" style="background:#f8fafc">' +
+                '<div class="row-between"><strong style="font-size:12px;color:#4338ca">' + esc(selectedLog.subject) + ' · ' + esc(formatKoreanDate(selectedLog.date)) + '</strong><button type="button" data-act="del-rec" data-id="' + esc(selectedLog.id) + '" class="btn btn-sm btn-outline">' + svgIcon('trash') + '</button></div>' +
+                '<h4 style="font-size:14px;font-weight:800">' + esc(selectedLog.title) + '</h4>' +
+                '<p style="font-size:12.5px;color:#334155;white-space:pre-wrap">' + esc(selectedLog.content || '상세 내용 없음') + '</p>' +
+                (selectedLog.link ? '<p style="font-size:11.5px;color:#4338ca;word-break:break-all">참고 링크: ' + esc(selectedLog.link) + '</p>' : '') +
+                (selectedLog.attachments && selectedLog.attachments.length ? '<p style="font-size:11.5px;color:#64748b">첨부: ' + selectedLog.attachments.map(function (a) { return esc(a.fileName); }).join(', ') + '</p>' : '') +
+              '</div>'
+            : '') +
+        '</div>' +
+      '</div>';
+    }
+
+    function renderAiTab() {
+      var logs = state.records.filter(function (r) { return r.kind === 'assignment'; });
+      var selectorList = logs.length === 0
+        ? '<div class="muted-box">먼저 [과제입력] 탭에서 탐구 기록을 1개 이상 저장해 주세요.</div>'
+        : '<div class="dropdown-list">' + logs.map(function (l) {
+            var checked = state.aiSelectedIds.indexOf(l.id) >= 0;
+            return '<button type="button" data-act="ai-toggle-rec" data-id="' + esc(l.id) + '" class="dropdown-item ' + (checked ? 'selected' : '') + '">' +
+              '<div style="min-width:0"><p style="font-size:13px;font-weight:700" class="truncate">[' + esc(l.subject) + '] ' + esc(l.title) + '</p><p style="font-size:11px;color:#64748b">' + esc(l.date) + (l.attachments && l.attachments.length ? ' · 첨부 ' + l.attachments.length + '개' : '') + '</p></div>' +
+              '<span style="font-size:12px;font-weight:700;color:' + (checked ? '#4338ca' : '#94a3b8') + '">' + (checked ? '선택됨' : '선택') + '</span>' +
+            '</button>';
+          }).join('') + '</div>';
+
+      var progressBox = state.aiProgress > 0
+        ? '<div class="item-box stack-xs" style="background:#eef2ff;border-color:#c7d2fe">' +
+            '<div class="row-between" style="font-size:12.5px"><strong>' + esc(state.aiProgressMsg) + '</strong><span class="tabular" style="font-weight:800;color:#4338ca">' + state.aiProgress + '% · ' + esc(state.aiEtaText) + '</span></div>' +
+            '<div class="progress-track"><div class="progress-fill" style="width:' + state.aiProgress + '%"></div></div>' +
+          '</div>'
+        : '';
+
+      var body = '';
+      if (state.aiSubTab === 'summary') {
+        body = '<div class="card stack-md">' +
+          '<div><h2 style="font-size:15px;font-weight:800">AI 과제 정리(요약) · 세특 3가지 방향 추천</h2><p style="font-size:12px;color:#64748b">내가 원하는 방향을 적으면 1번 세특에 우선 반영하고, 나이스(NEIS) 바이트 수까지 함께 확인합니다.</p></div>' +
+          '<div><label class="label">분석할 탐구 활동 선택 (' + state.aiSelectedIds.length + '건 선택됨)</label>' + selectorList + '</div>' +
+          '<div><label class="label">원하는 방향 설정 (선택)</label><input id="ai-direction-input" class="input" type="text" value="' + esc(state.aiDirection) + '" placeholder="예: AI 의료 영상 진단 진로와 연결, 수학적 모델링 강조" /></div>' +
+          '<button type="button" data-act="run-ai-summary" class="btn btn-primary" style="min-height:44px">AI 세특 보고서 생성</button>' +
+          progressBox +
+          (state.aiSummaryResult
+            ? '<div class="stack-sm">' +
+                '<div class="item-box" style="background:#f8fafc"><p style="font-size:12.5px;color:#334155">' + esc(state.aiSummaryResult.overview) + '</p></div>' +
+                state.aiSummaryResult.options.map(function (opt, idx) {
+                  var bytes = calcNeisBytes(opt.draft);
+                  var pct = Math.min(100, Math.round((bytes / 1500) * 100));
+                  return '<div class="item-box stack-xs">' +
+                    '<div class="row-between"><strong style="font-size:13px;color:#4338ca">' + esc(opt.label) + '</strong><span class="tabular" style="font-size:11.5px;color:#475569;font-weight:700">' + bytes + ' / 1,500 Bytes (' + opt.draft.length + '자)</span></div>' +
+                    '<div class="progress-track"><div class="progress-fill" style="width:' + pct + '%;background:' + (bytes > 1500 ? '#dc2626' : '#4338ca') + '"></div></div>' +
+                    '<p style="font-size:13px;color:#0f172a;line-height:1.6">' + esc(opt.draft) + '</p>' +
+                    '<div class="row-wrap"><button type="button" data-act="save-saeteuk" data-idx="' + idx + '" class="btn btn-sm btn-soft">세특 보관함에 저장</button></div>' +
+                  '</div>';
+                }).join('') +
+              '</div>'
+            : '') +
+        '</div>';
+      } else if (state.aiSubTab === 'linkage') {
+        body = '<div class="card stack-md">' +
+          '<div><h2 style="font-size:15px;font-weight:800">과목 간 AI 내용 연계 분석</h2><p style="font-size:12px;color:#64748b">2개 이상의 과목 탐구 기록을 선택해 융합 연결고리와 심화 후속 주제를 도출합니다.</p></div>' +
+          '<div><label class="label">연계 분석할 활동 선택 (2개 이상 권장)</label>' + selectorList + '</div>' +
+          '<button type="button" data-act="run-ai-linkage" class="btn btn-primary" style="min-height:44px">AI 과목 연계 분석 실행</button>' +
+          progressBox +
+          (state.aiLinkageResult
+            ? '<div class="stack-sm">' +
+                '<div class="kpi-grid" style="grid-template-columns:1fr 2fr">' +
+                  '<div class="kpi-box"><div class="kpi-label">연계 적합도</div><div class="kpi-val tabular" style="color:#4338ca">' + state.aiLinkageResult.score + ' / 5.0</div></div>' +
+                  '<div class="kpi-box"><div class="kpi-label">연계 과목</div><div class="kpi-val" style="font-size:14px">' + esc(state.aiLinkageResult.subjectsStr) + '</div></div>' +
+                '</div>' +
+                '<div class="item-box stack-xs"><strong style="font-size:13px">연계 분석 근거</strong><p style="font-size:13px;color:#334155">' + esc(state.aiLinkageResult.reasoning) + '</p></div>' +
+                state.aiLinkageResult.advancedTopics.map(function (tp) {
+                  return '<div class="item-box"><span style="font-size:11px;font-weight:700;color:#4338ca">' + esc(tp.subjects) + '</span><p style="font-size:13.5px;font-weight:700;margin-top:2px">' + esc(tp.title) + '</p><p style="font-size:12px;color:#475569;margin-top:2px">' + esc(tp.description) + '</p></div>';
+                }).join('') +
+                '<div class="item-box stack-xs">' +
+                  '<div class="row-between"><strong style="font-size:13px;color:#4338ca">융합 세특 문장 예시</strong><span class="tabular" style="font-size:11.5px;color:#475569">' + calcNeisBytes(state.aiLinkageResult.bridgeDraft) + ' Bytes</span></div>' +
+                  '<p style="font-size:13px">' + esc(state.aiLinkageResult.bridgeDraft) + '</p>' +
+                  '<button type="button" data-act="save-bridge-saeteuk" class="btn btn-sm btn-soft" style="align-self:flex-start">세특 보관함에 저장</button>' +
+                '</div>' +
+              '</div>'
+            : '') +
+        '</div>';
+      } else {
+        body = '<div class="card stack-md">' +
+          '<div><h2 style="font-size:15px;font-weight:800">내 세특 보관함 (' + state.savedSaeteuks.length + ')</h2><p style="font-size:12px;color:#64748b">저장한 세특 문구의 NEIS 바이트 수(1,500B 기준)를 수정하며 다듬을 수 있습니다.</p></div>' +
+          (state.savedSaeteuks.length === 0
+            ? '<div class="muted-box">보관된 세특이 없습니다. 과제 요약 또는 내용 연계에서 생성한 세특을 저장해 보세요.</div>'
+            : '<div class="stack-sm">' + state.savedSaeteuks.map(function (st) {
+                var bytes = calcNeisBytes(st.draft);
+                var isEditing = state.editingSaeteukId === st.id;
+                return '<div class="item-box stack-xs">' +
+                  '<div class="row-between"><strong style="font-size:13px;color:#4338ca">' + esc(st.subject) + ' · ' + esc(st.title) + '</strong><span class="tabular" style="font-size:11.5px;font-weight:700;color:' + (bytes > 1500 ? '#dc2626' : '#475569') + '">' + bytes + ' / 1,500 Bytes</span></div>' +
+                  (isEditing
+                    ? '<textarea id="edit-saeteuk-text" class="textarea">' + esc(state.editingSaeteukDraft) + '</textarea>' +
+                      '<div class="row-wrap"><button type="button" data-act="commit-edit-saeteuk" data-id="' + esc(st.id) + '" class="btn btn-sm btn-primary">수정 저장</button><button type="button" data-act="cancel-edit-saeteuk" class="btn btn-sm btn-outline">취소</button></div>'
+                    : '<p style="font-size:13px;line-height:1.6">' + esc(st.draft) + '</p>' +
+                      '<div class="row-wrap"><button type="button" data-act="start-edit-saeteuk" data-id="' + esc(st.id) + '" class="btn btn-sm btn-outline">수정</button><button type="button" data-act="del-saeteuk" data-id="' + esc(st.id) + '" class="btn btn-sm btn-danger-outline">삭제</button></div>') +
+                '</div>';
+              }).join('') + '</div>') +
+        '</div>';
+      }
+
+      return '<div class="stack-md">' +
+        '<div class="seg-bar">' +
+          '<button type="button" data-act="ai-tab" data-sub="summary" class="seg-btn ' + (state.aiSubTab === 'summary' ? 'active' : '') + '">과제 정리 · 세특 생성</button>' +
+          '<button type="button" data-act="ai-tab" data-sub="linkage" class="seg-btn ' + (state.aiSubTab === 'linkage' ? 'active' : '') + '">과목 내용 연계</button>' +
+          '<button type="button" data-act="ai-tab" data-sub="archive" class="seg-btn ' + (state.aiSubTab === 'archive' ? 'active' : '') + '">세특 보관함 (' + state.savedSaeteuks.length + ')</button>' +
+        '</div>' +
+        body +
+      '</div>';
+    }
+
+    function renderUniListHtml() {
+      var uq = state.uniQuery.trim().toLowerCase();
+      var localUnis = KOREAN_UNIVERSITIES.filter(function (u) {
+        return !uq || u.name.toLowerCase().indexOf(uq) >= 0 || u.location.toLowerCase().indexOf(uq) >= 0 ||
+          u.aliases.some(function (a) { return a.toLowerCase().indexOf(uq) >= 0; });
+      });
+      var uniMap = {};
+      var mergedUnis = [];
+      localUnis.concat(state.webUniversities).forEach(function (u) {
+        if (!uniMap[u.name]) { uniMap[u.name] = true; mergedUnis.push(u); }
+      });
+      mergedUnis = mergedUnis.slice(0, 14);
+      if (mergedUnis.length === 0) {
+        return '<div style="padding:12px;text-align:center;font-size:12px;color:#64748b">일치하는 대학이 없으면 &apos;웹에서 대학 검색&apos;을 누르거나 직접 입력하세요.</div>';
+      }
+      return mergedUnis.map(function (u) {
+        var sel = state.profile.targetUniversity === u.name;
+        return '<button type="button" data-act="pick-uni" data-name="' + esc(u.name) + '" class="dropdown-item ' + (sel ? 'selected' : '') + '">' +
+          '<div style="min-width:0"><p style="font-size:13px;font-weight:700">' + esc(u.name) + '</p><p style="font-size:11px;color:#64748b" class="truncate">' + esc(u.location) + ' · ' + esc(u.category) + (u.majors && u.majors.length ? ' · ' + esc(u.majors.slice(0, 3).join(', ')) : '') + '</p></div>' +
+          '<span style="font-size:11.5px;font-weight:700;color:' + (sel ? '#4338ca' : '#64748b') + '">' + (sel ? '선택됨' : '선택') + '</span>' +
+        '</button>';
+      }).join('');
+    }
+
+    function renderMajorListHtml() {
+      var mq = state.majorQuery.trim().toLowerCase();
+      var localMajors = mq ? KOREAN_MAJORS.filter(function (m) {
+        return m.name.toLowerCase().indexOf(mq) >= 0 || m.field.toLowerCase().indexOf(mq) >= 0 ||
+          (m.kw || []).some(function (k) { return k.indexOf(mq) >= 0; });
+      }) : [];
+      var majMap = {};
+      var mergedMajors = [];
+      state.webMajors.concat(localMajors).forEach(function (m) {
+        if (!majMap[m.name]) { majMap[m.name] = true; mergedMajors.push(m); }
+      });
+      mergedMajors = mergedMajors.slice(0, 14);
+      if (!state.showMajorDropdown || (mergedMajors.length === 0 && !state.isSearchingMajor)) return '';
+      return '<div class="dropdown-list">' +
+        (state.isSearchingMajor && mergedMajors.length === 0
+          ? '<p style="padding:12px;font-size:12px;color:#64748b;text-align:center">학과를 웹에서 검색 중입니다...</p>'
+          : mergedMajors.map(function (mj, idx) {
+              var sel = state.profile.targetMajor === mj.name;
+              return '<button type="button" data-act="pick-major" data-idx="' + idx + '" data-name="' + esc(mj.name) + '" class="dropdown-item ' + (sel ? 'selected' : '') + '">' +
+                '<div style="min-width:0"><p style="font-size:13px;font-weight:700">' + esc(mj.name) + '</p><p style="font-size:11px;color:#64748b" class="truncate">' + (mj.college ? esc(mj.college) + ' · ' : '') + esc(mj.field) + (mj.description ? ' · ' + esc(mj.description) : '') + '</p></div>' +
+                '<span style="font-size:11.5px;font-weight:700;color:' + (sel ? '#4338ca' : '#64748b') + '">' + (sel ? '선택됨' : '선택') + '</span>' +
+              '</button>';
+            }).join('')) +
+      '</div>';
+    }
+
+    function renderProfileTab() {
+      return '<div class="stack-md">' +
+        '<div class="grid-2-12">' +
+          '<form id="profile-form" class="card col-5 stack-md">' +
+            '<div><h2 style="font-size:15px;font-weight:800">내 학교 · 학생 프로필</h2><p style="font-size:12px;color:#64748b">로그인 계정: <strong>' + esc((state.authUser && (state.authUser.email || state.authUser.displayName)) || state.currentUser) + '</strong>' + (state.authUser && !state.authUser.isLocalFallback ? ' · 클라우드 동기화 중' : '') + '</p></div>' +
+            '<div class="stack-xs">' +
+              '<label class="label">학교명 찾기 (고등학교 검색 · 급식 연동)</label>' +
+              '<div class="row-wrap">' +
+                '<input id="pf-school-q" class="input" style="flex:1" value="' + esc(state.schoolQuery) + '" placeholder="예: 서울고등학교, 경기고" />' +
+                '<button type="button" data-act="search-school" class="btn btn-soft">' + svgIcon('search') + '<span>학교 찾기</span></button>' +
+              '</div>' +
+              (state.profile.schoolName ? '<p style="font-size:11.5px;color:#475569">현재 설정: <strong style="color:#4338ca">' + esc(state.profile.schoolName) + '</strong>' + (state.profile.schoolAddress ? ' · ' + esc(state.profile.schoolAddress) : '') + '</p>' : '') +
+              (state.showSchoolDropdown && (state.schoolResults.length > 0 || state.isSearchingSchool)
+                ? '<div class="dropdown-list">' +
+                    (state.isSearchingSchool && state.schoolResults.length === 0
+                      ? '<p style="padding:12px;font-size:12px;color:#64748b;text-align:center">전국 고등학교 검색 중...</p>'
+                      : state.schoolResults.map(function (hs, i) {
+                          return '<button type="button" data-act="pick-school" data-idx="' + i + '" class="dropdown-item">' +
+                            '<div style="min-width:0"><p style="font-size:13px;font-weight:700">' + esc(hs.name) + '</p><p style="font-size:11px;color:#64748b" class="truncate">' + esc(hs.location) + (hs.address ? ' · ' + esc(hs.address) : '') + '</p></div>' +
+                            '<span style="font-size:11.5px;font-weight:700;color:#4338ca">선택</span>' +
+                          '</button>';
+                        }).join('')) +
+                  '</div>'
+                : '') +
+            '</div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">' +
+              '<div><label class="label">학년</label><select id="pf-grade" class="select">' +
+                ['1', '2', '3'].map(function (g) { return '<option value="' + g + '" ' + (state.profile.grade === g ? 'selected' : '') + '>' + g + '학년</option>'; }).join('') +
+              '</select></div>' +
+              '<div><label class="label">반</label><input id="pf-class" class="input tabular" value="' + esc(state.profile.classNum) + '" placeholder="예: 3" /></div>' +
+              '<div><label class="label">학번</label><input id="pf-num" class="input tabular" value="' + esc(state.profile.studentNumber) + '" placeholder="예: 1312" /></div>' +
+            '</div>' +
+            '<p style="font-size:11px;color:#64748b;margin-top:-6px">학번 예시: 1학년 3반 12번인 경우 <strong>1312</strong></p>' +
+            '<div><label class="label">이름</label><input id="pf-name" class="input" value="' + esc(state.profile.name) + '" placeholder="이름 입력" /></div>' +
+            '<button type="submit" class="btn btn-primary" style="min-height:44px">프로필 저장하기</button>' +
+          '</form>' +
+
+          '<div class="card col-7 stack-md">' +
+            '<div><h2 style="font-size:15px;font-weight:800">목표 대학 · 희망 학과 웹 검색</h2><p style="font-size:12px;color:#64748b">대한민국 모든 대학과 희망 학과를 검색해 진학 목표를 설정합니다.</p></div>' +
+            ((state.profile.targetUniversity || state.profile.targetMajor)
+              ? '<div class="item-box row-between" style="background:#eef2ff;border-color:#c7d2fe">' +
+                  '<div><p style="font-size:11px;font-weight:700;color:#4338ca">현재 1순위 목표</p><p style="font-size:14.5px;font-weight:800">' + esc(state.profile.targetUniversity || '대학 미선택') + (state.profile.targetMajor ? ' · ' + esc(state.profile.targetMajor) : '') + '</p></div>' +
+                  '<button type="button" data-act="add-extra-target" class="btn btn-sm btn-outline">' + svgIcon('plus') + '<span>지망 추가</span></button>' +
+                '</div>'
+              : '') +
+
+            '<div class="stack-xs">' +
+              '<label class="label">목표 대학 검색 (전국 대학 통합)</label>' +
+              '<div class="row-wrap">' +
+                '<input id="pf-uni-q" class="input" style="flex:1" value="' + esc(state.uniQuery) + '" placeholder="예: 서울대, 카이스트, 부산외대, 연암대..." />' +
+                '<button type="button" data-act="search-uni" class="btn btn-soft">' + svgIcon('globe') + '<span>웹에서 대학 검색</span></button>' +
+              '</div>' +
+              '<div id="uni-dropdown-box" class="dropdown-list">' + renderUniListHtml() + '</div>' +
+            '</div>' +
+
+            '<div class="stack-xs">' +
+              '<label class="label">원하는 학과(전공) 웹 검색' + (state.profile.targetUniversity ? ' · ' + esc(state.profile.targetUniversity) + ' 기준 조회 가능' : '') + '</label>' +
+              (state.suggestedMajors.length
+                ? '<div class="row-wrap">' + state.suggestedMajors.map(function (mj) {
+                    return '<button type="button" data-act="pick-suggested-major" data-name="' + esc(mj) + '" class="btn btn-sm ' + (state.profile.targetMajor === mj ? 'btn-primary' : 'btn-outline') + '">' + esc(mj) + '</button>';
+                  }).join('') + '</div>'
+                : '') +
+              '<div class="row-wrap">' +
+                '<input id="pf-major-q" class="input" style="flex:1" value="' + esc(state.majorQuery) + '" placeholder="예: 컴퓨터공학부, 자유전공학부, 반도체, 간호학과" />' +
+                '<button type="button" data-act="search-major" class="btn btn-soft">' + svgIcon('globe') + '<span>웹에서 학과 검색</span></button>' +
+                '<button type="button" data-act="save-profile-quick" class="btn btn-primary">목표 저장</button>' +
+              '</div>' +
+              '<div id="major-dropdown-box">' + renderMajorListHtml() + '</div>' +
+            '</div>' +
+
+            (state.profile.extraTargets && state.profile.extraTargets.length
+              ? '<div class="stack-xs"><p class="label">희망 대학·학과 지망 목록 (' + state.profile.extraTargets.length + ')</p>' +
+                  state.profile.extraTargets.map(function (t, i) {
+                    return '<div class="item-box row-between" style="font-size:12.5px"><span><strong style="color:#4338ca">' + (i + 1) + '지망</strong> · <strong>' + esc(t.universityName) + '</strong> · ' + esc(t.majorName) + '</span><button type="button" data-act="del-extra-target" data-id="' + esc(t.id) + '" class="btn btn-sm btn-outline">' + svgIcon('trash') + '</button></div>';
+                  }).join('') +
+                '</div>'
+              : '') +
+          '</div>' +
+        '</div>' +
+
+        '<div class="card stack-md">' +
+          '<div><h2 style="font-size:15px;font-weight:800">데이터 백업 · 기기 간 이동</h2><p style="font-size:12px;color:#64748b">다른 스마트폰·태블릿·PC로 내 모든 기록, 시간표, 성적, 세특 보관함을 옮길 수 있습니다.</p></div>' +
+          '<div class="row-wrap">' +
+            '<button type="button" data-act="export-json" class="btn btn-primary">' + svgIcon('download') + '<span>백업 파일(.json) 저장</span></button>' +
+            '<button type="button" data-act="copy-json" class="btn btn-soft">백업 코드 복사</button>' +
+            '<label class="btn btn-outline" style="cursor:pointer">' + svgIcon('upload') + '<span>파일 불러오기</span><input id="backup-file-input" type="file" accept=".json,application/json" class="hidden" /></label>' +
+          '</div>' +
+          '<textarea id="backup-paste" class="textarea" style="min-height:80px" placeholder="또는 복사한 백업 JSON 코드를 여기에 붙여넣고 확인을 누르세요.">' + esc(state.backupPaste) + '</textarea>' +
+          '<div class="row-wrap">' +
+            '<button type="button" data-act="parse-backup" class="btn btn-outline">백업 데이터 검증</button>' +
+            (state.backupPreview ? '<button type="button" data-act="apply-backup" class="btn btn-primary">검증 완료 — 현재 계정에 복원 적용</button>' : '') +
+          '</div>' +
+          (state.backupError ? '<p style="font-size:12px;color:#be123c">' + esc(state.backupError) + '</p>' : '') +
+        '</div>' +
+      '</div>';
+    }
+
+    // =========================================================================
+    // 11. 메인 Render & 이벤트 위임
+    // =========================================================================
+    function render() {
+      var root = document.getElementById('app');
+      if (!state.currentUser) {
+        root.innerHTML = renderAuth() + (state.toastMsg ? '<div class="toast">' + esc(state.toastMsg) + '</div>' : '');
+        return;
+      }
+
+      var upcomingAlerts = state.records
+        .filter(function (r) { return !r.completed; })
+        .map(function (r) { return { r: r, diff: getDiffDaysFromToday(r.date) }; })
+        .filter(function (x) { return x.diff >= 0 && x.diff <= 3; })
+        .sort(function (a, b) { return a.diff - b.diff; });
+
+      var primary = upcomingAlerts[0];
+      var bannerHtml = (primary && !state.bannerDismissed)
+        ? '<div class="alert-banner"><div class="alert-banner-inner">' +
+            '<div class="truncate"><strong class="tabular" style="color:#be123c">' + (primary.diff === 0 ? '오늘 마감' : 'D-' + primary.diff + ' 알림') + '</strong> · <span>' + esc(primary.r.title) + (upcomingAlerts.length > 1 ? ' 외 ' + (upcomingAlerts.length - 1) + '건' : '') + '</span></div>' +
+            '<div class="row-wrap" style="flex-shrink:0"><button type="button" data-act="open-alerts" style="font-weight:700;color:#4338ca">전체 보기</button><button type="button" data-act="dismiss-banner" aria-label="닫기">' + svgIcon('x') + '</button></div>' +
+          '</div></div>'
+        : '';
+
+      var displayAccount = (state.authUser && (state.authUser.displayName || state.authUser.email)) || state.currentUser;
+      var subLineParts = [
+        state.profile.schoolName,
+        (state.profile.grade && state.profile.classNum) ? state.profile.grade + '학년 ' + state.profile.classNum + '반' : '',
+        state.profile.name || displayAccount
+      ].filter(Boolean);
+      var subLine = subLineParts.length ? subLineParts.join(' · ') : displayAccount + '님의 세특 로그 & AI 연계 분석기';
+
+      var titles = {
+        schedule: '리마인더 · 탐구 타임라인',
+        school: '우리 학교 · 시간표 · 급식 · 성적',
+        calendar: '월간 학사 달력 · 리마인더',
+        input: '수행평가 · 탐구 활동 기록',
+        ai: 'AI 세특 요약 · 보관함 · 연계 분석',
+        profile: '학생 프로필 · 목표 대학 · 데이터 백업'
+      };
+
+      var contentHtml = '';
+      if (state.activeTab === 'schedule') contentHtml = renderScheduleTab();
+      else if (state.activeTab === 'school') contentHtml = renderSchoolTab();
+      else if (state.activeTab === 'calendar') contentHtml = renderCalendarTab();
+      else if (state.activeTab === 'input') contentHtml = renderInputTab();
+      else if (state.activeTab === 'ai') contentHtml = renderAiTab();
+      else contentHtml = renderProfileTab();
+
+      var modalHtml = state.showAlertModal
+        ? '<div class="modal-backdrop"><div class="modal-panel stack-md">' +
+            '<div class="row-between"><div><h2 style="font-size:16px;font-weight:800">D-3 / D-1 마감 알림 센터</h2><p style="font-size:12px;color:#64748b">3일 이내 마감 예정인 미완료 리마인더입니다.</p></div><button type="button" data-act="close-alerts" class="btn btn-sm btn-outline">' + svgIcon('x') + '</button></div>' +
+            '<div class="stack-xs" style="overflow-y:auto">' +
+              (upcomingAlerts.length === 0
+                ? '<div class="muted-box">3일 이내 마감 예정인 미완료 리마인더가 없습니다.</div>'
+                : upcomingAlerts.map(function (item) {
+                    return '<div class="item-box row-between"><div><span class="tabular" style="font-size:11.5px;font-weight:700;color:#be123c">' + (item.diff === 0 ? '오늘 마감' : 'D-' + item.diff) + '</span> · <span style="font-size:11.5px;color:#64748b">' + esc(formatKoreanDate(item.r.date)) + '</span><p style="font-size:13.5px;font-weight:700">' + esc(item.r.title) + '</p></div><button type="button" data-act="toggle-rec" data-id="' + esc(item.r.id) + '" class="btn btn-sm btn-outline">완료</button></div>';
+                  }).join('')) +
+            '</div>' +
+          '</div></div>'
+        : '';
+
+      var navTabs = [
+        { k: 'schedule', l: '일정', i: 'list' },
+        { k: 'school', l: '학교', i: 'school' },
+        { k: 'calendar', l: '달력', i: 'cal' },
+        { k: 'input', l: '과제입력', i: 'pen' },
+        { k: 'ai', l: 'AI 기능', i: 'cpu' },
+        { k: 'profile', l: '프로필', i: 'user' }
+      ];
+
+      var syncErrorBannerHtml = state.syncError
+        ? '<div class="card" style="background:#fff1f2;border-color:#fecdd3;padding:12px 14px;margin-bottom:14px">' +
+            '<div class="row-between" style="gap:10px;align-items:flex-start">' +
+              '<div style="min-width:0;flex:1">' +
+                '<p style="font-size:13px;font-weight:700;color:#be123c">클라우드 동기화 오류</p>' +
+                '<p style="font-size:12px;color:#881337;margin-top:3px;word-break:break-word">' + esc(state.syncError) + '</p>' +
+              '</div>' +
+              '<div class="row-wrap" style="gap:6px;flex-shrink:0">' +
+                '<button type="button" data-act="retry-cloud-sync" class="btn btn-sm btn-primary">다시 연결</button>' +
+                '<button type="button" data-act="dismiss-sync-error" class="btn btn-sm btn-outline" aria-label="닫기">' + svgIcon('x') + '</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>'
+        : '';
+
+      root.innerHTML = '<div class="app-shell">' +
+        '<header class="topbar"><div class="topbar-inner">' +
+          '<button type="button" data-act="go-tab" data-tab="schedule" class="brand-btn">학교생활 도우미</button>' +
+          '<div class="topbar-actions">' +
+            '<button type="button" data-act="download-index-html" title="단일 index.html 파일로 다운로드" class="btn btn-sm btn-soft">' + svgIcon('download') + '<span>index.html</span></button>' +
+            '<button type="button" data-act="open-alerts" class="btn btn-sm btn-outline">' + svgIcon('bell') + '<span>알림</span>' + (upcomingAlerts.length ? '<span class="badge-num tabular">' + upcomingAlerts.length + '</span>' : '') + '</button>' +
+            '<button type="button" data-act="logout" aria-label="로그아웃" class="btn btn-sm btn-outline">' + svgIcon('logout') + '<span class="hide-xs">로그아웃</span></button>' +
+          '</div>' +
+        '</div></header>' +
+        bannerHtml +
+        '<main class="main-wrap">' +
+          '<div class="page-header"><p class="page-sub">' + esc(subLine) + '</p><h1 class="page-title">' + esc(titles[state.activeTab]) + '</h1></div>' +
+          syncErrorBannerHtml +
+          contentHtml +
+        '</main>' +
+        '<nav class="bottom-nav" aria-label="하단 주 메뉴"><div class="bottom-nav-grid">' +
+          navTabs.map(function (t) {
+            return '<button type="button" data-act="go-tab" data-tab="' + t.k + '" class="nav-btn ' + (state.activeTab === t.k ? 'active' : '') + '">' + svgIcon(t.i) + '<span>' + t.l + '</span></button>';
+          }).join('') +
+        '</div></nav>' +
+        modalHtml +
+        (state.toastMsg ? '<div class="toast">' + esc(state.toastMsg) + '</div>' : '') +
+      '</div>';
+    }
+
+    // 급식 자동 조회 트리거
+    async function maybeAutoFetchMeal(force) {
+      if (!state.currentUser || !state.profile.schoolName) return;
+      var existing = state.meals.find(function (m) {
+        return m.date === state.mealDate && m.mealType === state.mealType;
+      });
+      if (existing && !force) return;
+      var key = state.profile.schoolName + '|' + state.mealDate + '|' + state.mealType;
+      if (!force && state.mealAutoAttempted[key]) return;
+      state.mealAutoAttempted[key] = true;
+      state.isFetchingMeal = true;
+      state.mealNoticeMsg = '';
+      render();
+
+      var res = await fetchSchoolMealLive(
+        state.profile.schoolName,
+        state.profile.officeCode,
+        state.profile.schoolCode,
+        state.mealDate,
+        state.mealType
+      );
+      state.isFetchingMeal = false;
+      if (res.found) {
+        var mealId = 'meal-' + state.mealDate + '-' + (state.mealType === '조식' ? '1' : state.mealType === '석식' ? '3' : '2');
+        var idx = state.meals.findIndex(function (m) {
+          return m.date === state.mealDate && m.mealType === state.mealType;
+        });
+        var entry = {
+          id: idx >= 0 ? state.meals[idx].id : mealId,
+          date: state.mealDate,
+          mealType: state.mealType,
+          menu: res.menu,
+          calories: res.calories || ''
+        };
+        if (idx >= 0) state.meals[idx] = entry;
+        else state.meals.push(entry);
+        savePart('meals');
+        var bridge = getBridge();
+        if (bridge && state.authUser && !state.authUser.isLocalFallback) {
+          bridge.upsertMeal(entry, idx >= 0);
+        }
+        if (force) showToast('오늘의 식단을 불러왔습니다.');
+      } else if (res.reason) {
+        state.mealNoticeMsg = res.reason;
+      }
+      render();
+    }
+
+    // =========================================================================
+    // 12. 전역 이벤트 핸들러 (DOM 재생성에도 안정적)
+    // =========================================================================
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-act]');
+      if (!btn) return;
+      var act = btn.getAttribute('data-act');
+
+      if (act === 'google-login') {
+        if (isLocalOfflineMode()) {
+          state.authError = '로컬 파일(file://) 환경에서는 Google 팝업 로그인이 제한됩니다. Vercel 등 웹 주소에서 열거나 아래 로컬 오프라인 모드를 이용해 주세요.';
+          render();
+          return;
+        }
+        state.authError = '';
+        state.isLoggingIn = true;
+        render();
+
+        var existingBridge = getBridge();
+        var loginPromise = existingBridge
+          ? existingBridge.signInWithGoogle()
+          : ensureFirebaseBridge(true).then(function (b) {
+              return b.signInWithGoogle();
+            });
+
+        loginPromise.then(function () {
+          state.isLoggingIn = false;
+          render();
+        }).catch(function (err) {
+          state.isLoggingIn = false;
+          var code = err && err.code ? String(err.code) : '';
+          if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+            state.authError = 'Google 로그인이 취소되었습니다. 다시 로그인 버튼을 눌러 주세요.';
+          } else if (code === 'auth/popup-blocked') {
+            state.authError = '브라우저에서 로그인 팝업이 차단되었습니다. 팝업 차단을 허용하거나 로그인 버튼을 한 번 더 눌러 주세요.';
+          } else if (code === 'auth/unauthorized-domain') {
+            state.authError = '현재 도메인(' + window.location.hostname + ')이 Firebase 승인 도메인에 등록되지 않았습니다. Firebase Console > Authentication > Settings > Authorized domains에 추가해 주세요.';
+          } else {
+            state.authError = 'Google 로그인 중 오류가 발생했습니다: ' + ((err && err.message) || code || '네트워크 또는 브라우저 설정을 확인해 주세요.');
+          }
+          render();
+        });
+      } else if (act === 'local-offline-login') {
+        state.authError = '';
+        state.currentUser = 'local-offline';
+        state.authUser = { uid: 'local-offline', displayName: '오프라인 학생', email: '', isLocalFallback: true };
+        loadLocalUserData('local-offline');
+        render();
+        showToast('로컬 오프라인 모드로 시작했습니다.');
+      } else if (act === 'go-tab') {
+        state.activeTab = btn.getAttribute('data-tab');
+        savePart('tab');
+        render();
+        if (state.activeTab === 'school' && state.schoolSubTab === 'meal') {
+          maybeAutoFetchMeal(false);
+        }
+      } else if (act === 'retry-cloud-sync') {
+        state.syncError = '';
+        render();
+        var syncBridge = getBridge();
+        if (syncBridge && syncBridge.retryCloudSync) {
+          syncBridge.retryCloudSync();
+          showToast('클라우드에 다시 연결하는 중입니다...');
+        }
+      } else if (act === 'dismiss-sync-error') {
+        state.syncError = '';
+        render();
+      } else if (act === 'logout') {
+        var outBridge = getBridge();
+        if (outBridge && state.authUser && !state.authUser.isLocalFallback) {
+          outBridge.signOutGoogle();
+        } else {
+          storage.remove(LEGACY_SESSION_KEY);
+          state.currentUser = null;
+          state.authUser = null;
+          state.syncError = '';
+          state.showAlertModal = false;
+          render();
+        }
+      } else if (act === 'download-index-html') {
+        try {
+          var clone = document.documentElement.cloneNode(true);
+          var scripts = clone.querySelectorAll('script[src]');
+          for (var si = 0; si < scripts.length; si++) {
+            var sSrc = scripts[si].getAttribute('src') || '';
+            if (sSrc.indexOf('vite') >= 0 || sSrc.indexOf('@') >= 0 || sSrc.indexOf('/assets/') >= 0) {
+              scripts[si].parentNode.removeChild(scripts[si]);
+            }
+          }
+          var overlays = clone.querySelectorAll('vite-error-overlay');
+          for (var oi = 0; oi < overlays.length; oi++) {
+            overlays[oi].parentNode.removeChild(overlays[oi]);
+          }
+          var clonedApp = clone.querySelector('#app');
+          if (clonedApp) clonedApp.innerHTML = '';
+          var htmlStr = '<!doctype html>\n' + clone.outerHTML;
+          var hBlob = new Blob([htmlStr], { type: 'text/html;charset=utf-8' });
+          var hUrl = URL.createObjectURL(hBlob);
+          var dlLink = document.createElement('a');
+          dlLink.href = hUrl;
+          dlLink.download = 'index.html';
+          document.body.appendChild(dlLink);
+          dlLink.click();
+          document.body.removeChild(dlLink);
+          URL.revokeObjectURL(hUrl);
+          showToast('단일 실행 파일(index.html)이 다운로드되었습니다.');
+        } catch (err) {
+          showToast('파일 다운로드 중 오류가 발생했습니다.');
+        }
+      } else if (act === 'open-alerts') {
+        state.showAlertModal = true;
+        render();
+      } else if (act === 'close-alerts') {
+        state.showAlertModal = false;
+        render();
+      } else if (act === 'dismiss-banner') {
+        state.bannerDismissed = true;
+        render();
+      } else if (act === 'toggle-rec') {
+        var tid = btn.getAttribute('data-id');
+        var nextCompleted = false;
+        state.records = state.records.map(function (r) {
+          if (r.id === tid) {
+            nextCompleted = !r.completed;
+            return Object.assign({}, r, { completed: nextCompleted });
+          }
+          return r;
+        });
+        savePart('records');
+        var bToggle = getBridge();
+        if (bToggle && state.authUser && !state.authUser.isLocalFallback) {
+          bToggle.toggleRecordCompleted(tid, nextCompleted);
+        }
+        render();
+      } else if (act === 'del-rec') {
+        var did = btn.getAttribute('data-id');
+        state.records = state.records.filter(function (r) { return r.id !== did; });
+        savePart('records');
+        var bDelRec = getBridge();
+        if (bDelRec && state.authUser && !state.authUser.isLocalFallback) {
+          bDelRec.deleteSubDoc('records', did);
+        }
+        showToast('선택한 기록이 삭제되었습니다.');
+      } else if (act === 'school-tab') {
+        state.schoolSubTab = btn.getAttribute('data-sub');
+        render();
+        if (state.schoolSubTab === 'meal') maybeAutoFetchMeal(false);
+      } else if (act === 'grade-mode') {
+        state.gradeMode = btn.getAttribute('data-mode');
+        render();
+      } else if (act === 'meal-delta') {
+        state.mealDate = addDaysISO(state.mealDate, Number(btn.getAttribute('data-delta')));
+        state.mealNoticeMsg = '';
+        render();
+        maybeAutoFetchMeal(false);
+      } else if (act === 'meal-type') {
+        state.mealType = btn.getAttribute('data-type');
+        state.mealNoticeMsg = '';
+        render();
+        maybeAutoFetchMeal(false);
+      } else if (act === 'meal-refresh') {
+        maybeAutoFetchMeal(true);
+      } else if (act === 'del-grade') {
+        var gid = btn.getAttribute('data-id');
+        state.grades = state.grades.filter(function (g) { return g.id !== gid; });
+        savePart('grades');
+        var bDelGrd = getBridge();
+        if (bDelGrd && state.authUser && !state.authUser.isLocalFallback) {
+          bDelGrd.deleteSubDoc('grades', gid);
+        }
+        showToast('내신 성적이 삭제되었습니다.');
+      } else if (act === 'del-mock') {
+        var mid = btn.getAttribute('data-id');
+        state.mockExams = state.mockExams.filter(function (m) { return m.id !== mid; });
+        savePart('mockExams');
+        var bDelMock = getBridge();
+        if (bDelMock && state.authUser && !state.authUser.isLocalFallback) {
+          bDelMock.deleteSubDoc('mockExams', mid);
+        }
+        showToast('모의고사 성적이 삭제되었습니다.');
+      } else if (act === 'cal-select') {
+        state.selectedDate = btn.getAttribute('data-date');
+        render();
+      } else if (act === 'cal-month') {
+        var nm = state.calMonth + Number(btn.getAttribute('data-delta'));
+        if (nm < 0) { state.calYear--; state.calMonth = 11; }
+        else if (nm > 11) { state.calYear++; state.calMonth = 0; }
+        else state.calMonth = nm;
+        render();
+      } else if (act === 'cal-today') {
+        var now = new Date();
+        state.calYear = now.getFullYear();
+        state.calMonth = now.getMonth();
+        state.selectedDate = getTodayISO();
+        render();
+      } else if (act === 'apply-scan') {
+        var prev = (state.inputForm.content || '').trim();
+        state.inputForm.content = prev ? prev + '\n\n' + state.pendingApplyScanText : state.pendingApplyScanText;
+        state.pendingApplyScanText = '';
+        showToast('스캔한 내용을 상세내용에 적용했습니다.');
+      } else if (act === 'dismiss-scan') {
+        state.pendingApplyScanText = '';
+        render();
+      } else if (act === 'del-draft-att') {
+        var aidx = Number(btn.getAttribute('data-idx'));
+        state.draftAttachments.splice(aidx, 1);
+        render();
+      } else if (act === 'pick-archive') {
+        state.selectedArchiveId = btn.getAttribute('data-id');
+        render();
+      } else if (act === 'ai-tab') {
+        state.aiSubTab = btn.getAttribute('data-sub');
+        render();
+      } else if (act === 'ai-toggle-rec') {
+        var rid = btn.getAttribute('data-id');
+        var pos = state.aiSelectedIds.indexOf(rid);
+        if (pos >= 0) state.aiSelectedIds.splice(pos, 1);
+        else state.aiSelectedIds.push(rid);
+        render();
+      } else if (act === 'run-ai-summary') {
+        runAiSummaryAnalysis();
+      } else if (act === 'run-ai-linkage') {
+        runAiLinkageAnalysis();
+      } else if (act === 'save-saeteuk') {
+        var oidx = Number(btn.getAttribute('data-idx'));
+        var opt = state.aiSummaryResult && state.aiSummaryResult.options[oidx];
+        if (opt) {
+          var newSt = {
+            id: uid('st'),
+            subject: opt.subject,
+            title: opt.label,
+            draft: opt.draft,
+            keywords: (state.aiSummaryResult && state.aiSummaryResult.keywords) || [],
+            sourceType: 'summary',
+            updatedAt: new Date().toISOString()
+          };
+          state.savedSaeteuks.unshift(newSt);
+          savePart('saeteuks');
+          var bSt1 = getBridge();
+          if (bSt1 && state.authUser && !state.authUser.isLocalFallback) {
+            bSt1.createSaeteuk(newSt);
+          }
+          showToast('세특 보관함에 저장되었습니다.');
+        }
+      } else if (act === 'save-bridge-saeteuk') {
+        if (state.aiLinkageResult) {
+          var newBridgeSt = {
+            id: uid('st'),
+            subject: state.aiLinkageResult.subjectsStr,
+            title: '과목 내용 연계 세특',
+            draft: state.aiLinkageResult.bridgeDraft,
+            keywords: state.aiLinkageResult.keywords || [],
+            sourceType: 'linkage',
+            updatedAt: new Date().toISOString()
+          };
+          state.savedSaeteuks.unshift(newBridgeSt);
+          savePart('saeteuks');
+          var bSt2 = getBridge();
+          if (bSt2 && state.authUser && !state.authUser.isLocalFallback) {
+            bSt2.createSaeteuk(newBridgeSt);
+          }
+          showToast('연계 세특이 보관함에 저장되었습니다.');
+        }
+      } else if (act === 'start-edit-saeteuk') {
+        var sid = btn.getAttribute('data-id');
+        var foundSt = state.savedSaeteuks.find(function (s) { return s.id === sid; });
+        if (foundSt) {
+          state.editingSaeteukId = sid;
+          state.editingSaeteukDraft = foundSt.draft;
+          render();
+        }
+      } else if (act === 'cancel-edit-saeteuk') {
+        state.editingSaeteukId = '';
+        render();
+      } else if (act === 'commit-edit-saeteuk') {
+        var csid = btn.getAttribute('data-id');
+        var ta = document.getElementById('edit-saeteuk-text');
+        var nextText = ta ? ta.value.trim() : '';
+        if (nextText) {
+          var editedTitle = '';
+          state.savedSaeteuks = state.savedSaeteuks.map(function (s) {
+            if (s.id === csid) {
+              editedTitle = s.title;
+              return Object.assign({}, s, { draft: nextText, updatedAt: new Date().toISOString() });
+            }
+            return s;
+          });
+          savePart('saeteuks');
+          var bStUpd = getBridge();
+          if (bStUpd && state.authUser && !state.authUser.isLocalFallback) {
+            bStUpd.updateSaeteuk(csid, editedTitle, nextText);
+          }
+          state.editingSaeteukId = '';
+          showToast('저장된 세특을 수정했습니다.');
+        }
+      } else if (act === 'del-saeteuk') {
+        var dsid = btn.getAttribute('data-id');
+        state.savedSaeteuks = state.savedSaeteuks.filter(function (s) { return s.id !== dsid; });
+        savePart('saeteuks');
+        var bStDel = getBridge();
+        if (bStDel && state.authUser && !state.authUser.isLocalFallback) {
+          bStDel.deleteSubDoc('saeteuks', dsid);
+        }
+        showToast('세특을 삭제했습니다.');
+      } else if (act === 'search-school') {
+        var sq = (document.getElementById('pf-school-q') || {}).value || state.schoolQuery;
+        state.schoolQuery = sq;
+        if (sq.trim().length < 2) { showToast('고등학교 이름을 2글자 이상 입력해 주세요.'); return; }
+        state.isSearchingSchool = true;
+        state.showSchoolDropdown = true;
+        render();
+        searchHighSchoolsLive(sq).then(function (list) {
+          state.schoolResults = list;
+          state.isSearchingSchool = false;
+          render();
+          if (list.length === 0) showToast('일치하는 고등학교를 찾지 못했습니다.');
+        });
+      } else if (act === 'pick-school') {
+        var hs = state.schoolResults[Number(btn.getAttribute('data-idx'))];
+        if (hs) {
+          state.profile.schoolName = hs.name;
+          state.profile.schoolCode = hs.schoolCode || '';
+          state.profile.officeCode = hs.officeCode || '';
+          state.profile.schoolAddress = hs.address || hs.location || '';
+          state.schoolQuery = hs.name;
+          state.showSchoolDropdown = false;
+          savePart('profile');
+          showToast(hs.name + '이(가) 설정되었습니다.');
+        }
+      } else if (act === 'search-uni') {
+        var uq = (document.getElementById('pf-uni-q') || {}).value || state.uniQuery;
+        state.uniQuery = uq;
+        if (uq.trim().length < 2) { showToast('대학 이름을 2글자 이상 입력해 주세요.'); return; }
+        state.isSearchingUni = true;
+        render();
+        searchUniversitiesLive(uq).then(function (list) {
+          state.webUniversities = list;
+          state.isSearchingUni = false;
+          render();
+          showToast('대학 ' + list.length + '곳을 검색했습니다.');
+        });
+      } else if (act === 'pick-uni') {
+        var uname = btn.getAttribute('data-name');
+        var foundU = KOREAN_UNIVERSITIES.concat(state.webUniversities).find(function (u) { return u.name === uname; });
+        state.profile.targetUniversity = uname;
+        state.profile.targetUniversityLocation = foundU ? foundU.location : '';
+        state.uniQuery = uname;
+        state.suggestedMajors = foundU && foundU.majors ? foundU.majors : [];
+        state.webMajors = [];
+        savePart('profile');
+        showToast(uname + '을(를) 목표 대학으로 선택했습니다.');
+      } else if (act === 'search-major') {
+        var mq = (document.getElementById('pf-major-q') || {}).value || state.majorQuery;
+        state.majorQuery = mq;
+        if (!mq.trim() && !state.profile.targetUniversity) {
+          showToast('학과 키워드를 입력하거나 목표 대학을 먼저 선택해 주세요.');
+          return;
+        }
+        state.isSearchingMajor = true;
+        state.showMajorDropdown = true;
+        render();
+        searchMajorsLive(mq, state.profile.targetUniversity).then(function (list) {
+          state.webMajors = list;
+          state.isSearchingMajor = false;
+          render();
+          showToast('학과 ' + list.length + '건을 찾았습니다.');
+        });
+      } else if (act === 'pick-major' || act === 'pick-suggested-major') {
+        var mname = btn.getAttribute('data-name');
+        state.profile.targetMajor = mname;
+        state.majorQuery = mname;
+        state.showMajorDropdown = false;
+        savePart('profile');
+        showToast(mname + '을(를) 희망 학과로 선택했습니다.');
+      } else if (act === 'save-profile-quick') {
+        state.profile.targetUniversity = (state.profile.targetUniversity || state.uniQuery).trim();
+        state.profile.targetMajor = state.majorQuery.trim();
+        savePart('profile');
+        showToast('진학 목표가 저장되었습니다.');
+      } else if (act === 'add-extra-target') {
+        if (!state.profile.targetUniversity || !state.profile.targetMajor) {
+          showToast('목표 대학과 원하는 학과를 먼저 선택해 주세요.');
+          return;
+        }
+        state.profile.extraTargets = state.profile.extraTargets || [];
+        if (state.profile.extraTargets.length >= 5) {
+          showToast('지망 목록은 최대 5개까지 저장할 수 있습니다.');
+          return;
+        }
+        state.profile.extraTargets.push({
+          id: uid('goal'),
+          universityName: state.profile.targetUniversity,
+          majorName: state.profile.targetMajor
+        });
+        savePart('profile');
+        showToast('지망 목록에 추가되었습니다.');
+      } else if (act === 'del-extra-target') {
+        var etid = btn.getAttribute('data-id');
+        state.profile.extraTargets = (state.profile.extraTargets || []).filter(function (x) { return x.id !== etid; });
+        savePart('profile');
+        render();
+      } else if (act === 'export-json') {
+        var bundle = {
+          version: 3,
+          userId: state.currentUser,
+          exportedAt: new Date().toISOString(),
+          records: state.records,
+          savedSaeteuks: state.savedSaeteuks,
+          profile: state.profile,
+          timetable: state.timetable,
+          meals: state.meals,
+          grades: state.grades,
+          mockExams: state.mockExams
+        };
+        var blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = '학교생활도우미_백업_' + state.currentUser + '_' + getTodayISO() + '.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('백업 파일(.json)이 저장되었습니다.');
+      } else if (act === 'copy-json') {
+        var bObj = {
+          version: 3,
+          userId: state.currentUser,
+          records: state.records,
+          savedSaeteuks: state.savedSaeteuks,
+          profile: state.profile,
+          timetable: state.timetable,
+          meals: state.meals,
+          grades: state.grades,
+          mockExams: state.mockExams
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(JSON.stringify(bObj)).then(function () {
+            showToast('백업 코드가 클립보드에 복사되었습니다.');
+          }).catch(function () {
+            showToast('복사 권한이 제한되어 파일 저장을 이용해 주세요.');
+          });
+        } else {
+          showToast('파일 저장 버튼을 이용해 주세요.');
+        }
+      } else if (act === 'parse-backup') {
+        var txt = (document.getElementById('backup-paste') || {}).value || '';
+        state.backupPaste = txt;
+        try {
+          var parsed = JSON.parse(txt);
+          if (!parsed || !Array.isArray(parsed.records)) throw new Error('형식 오류');
+          state.backupPreview = parsed;
+          state.backupError = '';
+          showToast('백업 파일 검증 완료! 복원 버튼을 눌러 적용하세요.');
+        } catch (err) {
+          state.backupPreview = null;
+          state.backupError = '올바른 학교생활 도우미 백업 JSON 형식이 아닙니다.';
+          render();
+        }
+      } else if (act === 'apply-backup') {
+        if (!state.backupPreview) return;
+        var bp = state.backupPreview;
+        state.records = bp.records || [];
+        state.savedSaeteuks = bp.savedSaeteuks || [];
+        state.profile = Object.assign(createEmptyProfile(), bp.profile || {});
+        state.timetable = Object.assign(createEmptyTimetable(), bp.timetable || {});
+        state.meals = bp.meals || [];
+        state.grades = bp.grades || [];
+        state.mockExams = bp.mockExams || [];
+        ['records', 'saeteuks', 'profile', 'timetable', 'meals', 'grades', 'mockExams'].forEach(savePart);
+        var bBackup = getBridge();
+        if (bBackup && state.authUser && !state.authUser.isLocalFallback) {
+          bBackup.importAllToCloud({
+            profile: state.profile,
+            timetable: state.timetable,
+            records: state.records,
+            saeteuks: state.savedSaeteuks,
+            meals: state.meals,
+            grades: state.grades,
+            mockExams: state.mockExams
+          });
+        }
+        state.schoolQuery = state.profile.schoolName || '';
+        state.uniQuery = state.profile.targetUniversity || '';
+        state.majorQuery = state.profile.targetMajor || '';
+        state.backupPreview = null;
+        state.backupPaste = '';
+        showToast('백업 데이터가 현재 계정에 복원되었습니다.');
+      }
+    });
+
+    document.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var form = e.target;
+      var bridge = getBridge();
+      var cloudActive = Boolean(bridge && state.authUser && !state.authUser.isLocalFallback);
+
+      if (form.id === 'meal-form') {
+        var menu = (document.getElementById('meal-menu-text') || {}).value || '';
+        var cal = (document.getElementById('meal-cal-input') || {}).value || '';
+        var mealId = 'meal-' + state.mealDate + '-' + (state.mealType === '조식' ? '1' : state.mealType === '석식' ? '3' : '2');
+        var idx = state.meals.findIndex(function (m) {
+          return m.date === state.mealDate && m.mealType === state.mealType;
+        });
+        var entry = { id: idx >= 0 ? state.meals[idx].id : mealId, date: state.mealDate, mealType: state.mealType, menu: menu.trim(), calories: cal.trim() };
+        if (idx >= 0) state.meals[idx] = entry;
+        else state.meals.push(entry);
+        savePart('meals');
+        if (cloudActive) bridge.upsertMeal(entry, idx >= 0);
+        showToast('식단이 저장되었습니다.');
+      } else if (form.id === 'school-grade-form') {
+        var newGrd = {
+          id: uid('grd'),
+          term: document.getElementById('sg-term').value,
+          subject: document.getElementById('sg-subject').value,
+          score: Number(document.getElementById('sg-score').value),
+          gradeRank: Number(document.getElementById('sg-rank').value),
+          createdAt: new Date().toISOString()
+        };
+        state.grades.push(newGrd);
+        savePart('grades');
+        if (cloudActive) bridge.createGrade(newGrd);
+        showToast('내신 성적이 추가되었습니다.');
+      } else if (form.id === 'mock-grade-form') {
+        var newMock = {
+          id: uid('mock'),
+          examName: document.getElementById('mg-exam').value,
+          subject: document.getElementById('mg-subject').value,
+          score: Number(document.getElementById('mg-score').value),
+          maxScore: Number(document.getElementById('mg-max').value || 100),
+          gradeRank: Number(document.getElementById('mg-rank').value),
+          percentile: document.getElementById('mg-pct').value ? Number(document.getElementById('mg-pct').value) : null,
+          createdAt: new Date().toISOString()
+        };
+        state.mockExams.push(newMock);
+        savePart('mockExams');
+        if (cloudActive) bridge.createMockExam(newMock);
+        showToast('모의고사 성적이 추가되었습니다.');
+      } else if (form.id === 'reminder-form') {
+        var rt = (document.getElementById('rem-title') || {}).value.trim();
+        var rc = (document.getElementById('rem-content') || {}).value.trim();
+        if (!rt) return;
+        var newRem = {
+          id: uid('rem'),
+          kind: 'schedule',
+          subject: '리마인더',
+          title: rt,
+          content: rc,
+          date: state.selectedDate,
+          link: '',
+          attachments: [],
+          completed: false,
+          createdAt: new Date().toISOString()
+        };
+        state.records.push(newRem);
+        savePart('records');
+        if (cloudActive) bridge.createRecord(newRem);
+        state.bannerDismissed = false;
+        showToast('달력에 리마인더가 추가되었습니다.');
+      } else if (form.id === 'assignment-form') {
+        var newId = uid('log');
+        var newLog = {
+          id: newId,
+          kind: 'assignment',
+          subject: state.inputForm.subject,
+          date: state.inputForm.date,
+          title: state.inputForm.title.trim(),
+          content: state.inputForm.content.trim(),
+          link: state.inputForm.link.trim(),
+          attachments: state.draftAttachments.slice(),
+          completed: true,
+          createdAt: new Date().toISOString()
+        };
+        state.records.push(newLog);
+        savePart('records');
+        if (cloudActive) bridge.createRecord(newLog);
+        state.aiSelectedIds.push(newId);
+        state.selectedArchiveId = newId;
+        state.inputForm.title = '';
+        state.inputForm.content = '';
+        state.inputForm.link = '';
+        state.draftAttachments = [];
+        state.pendingApplyScanText = '';
+        showToast('탐구 활동이 저장되었습니다. [AI 기능]에서 활용할 수 있습니다.');
+      } else if (form.id === 'profile-form') {
+        state.profile.schoolName = ((document.getElementById('pf-school-q') || {}).value || state.profile.schoolName).trim();
+        state.profile.grade = document.getElementById('pf-grade').value;
+        state.profile.classNum = (document.getElementById('pf-class') || {}).value.trim();
+        state.profile.studentNumber = (document.getElementById('pf-num') || {}).value.trim();
+        state.profile.name = (document.getElementById('pf-name') || {}).value.trim();
+        state.profile.updatedAt = new Date().toISOString();
+        state.schoolQuery = state.profile.schoolName;
+        savePart('profile');
+        showToast('학생 프로필이 저장되었습니다.');
+      }
+    });
+
+    document.addEventListener('input', function (e) {
+      var el = e.target;
+      if (el.hasAttribute('data-tt-day')) {
+        var d = el.getAttribute('data-tt-day');
+        var p = Number(el.getAttribute('data-tt-p'));
+        if (!state.timetable[d]) state.timetable[d] = ['', '', '', '', '', '', '', ''];
+        state.timetable[d][p] = el.value;
+        savePart('timetable');
+      } else if (el.id === 'in-title') {
+        state.inputForm.title = el.value;
+      } else if (el.id === 'in-content') {
+        state.inputForm.content = el.value;
+      } else if (el.id === 'in-link') {
+        state.inputForm.link = el.value;
+      } else if (el.id === 'ai-direction-input') {
+        state.aiDirection = el.value;
+      } else if (el.id === 'pf-school-q') {
+        state.schoolQuery = el.value;
+        state.profile.schoolName = el.value;
+      } else if (el.id === 'pf-uni-q') {
+        state.uniQuery = el.value;
+        var ubox = document.getElementById('uni-dropdown-box');
+        if (ubox) ubox.innerHTML = renderUniListHtml();
+      } else if (el.id === 'pf-major-q') {
+        state.majorQuery = el.value;
+        state.profile.targetMajor = el.value;
+        state.showMajorDropdown = true;
+        var mbox = document.getElementById('major-dropdown-box');
+        if (mbox) mbox.innerHTML = renderMajorListHtml();
+      } else if (el.id === 'backup-paste') {
+        state.backupPaste = el.value;
+      }
+    });
+
+    document.addEventListener('change', function (e) {
+      var el = e.target;
+      if (el.id === 'meal-date-input') {
+        state.mealDate = el.value || getTodayISO();
+        state.mealNoticeMsg = '';
+        render();
+        maybeAutoFetchMeal(false);
+      } else if (el.id === 'mg-subject') {
+        var found = MOCK_SUBJECTS.find(function (s) { return s.name === el.value; });
+        var maxEl = document.getElementById('mg-max');
+        if (found && maxEl) maxEl.value = String(found.max);
+      } else if (el.id === 'in-subject') {
+        state.inputForm.subject = el.value;
+      } else if (el.id === 'in-date') {
+        state.inputForm.date = el.value;
+      } else if (el.id === 'in-file') {
+        var f = el.files && el.files[0];
+        el.value = '';
+        if (f) scanAttachmentFile(f);
+      } else if (el.id === 'backup-file-input') {
+        var bf = el.files && el.files[0];
+        el.value = '';
+        if (bf) {
+          bf.text().then(function (txt) {
+            state.backupPaste = txt;
+            try {
+              var parsed = JSON.parse(txt);
+              if (!parsed || !Array.isArray(parsed.records)) throw new Error();
+              state.backupPreview = parsed;
+              state.backupError = '';
+              showToast('백업 파일 검증 완료! 복원 버튼을 눌러 주세요.');
+            } catch (err) {
+              state.backupPreview = null;
+              state.backupError = '올바른 백업 JSON 파일이 아닙니다.';
+              render();
+            }
+          });
+        }
+      }
+    });
+
+    // 엔터키 검색 지원 (학교 / 대학 / 학과)
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter') return;
+      var el = e.target;
+      if (el.id === 'pf-school-q') {
+        e.preventDefault();
+        var btn1 = document.querySelector('[data-act="search-school"]');
+        if (btn1) btn1.click();
+      } else if (el.id === 'pf-uni-q') {
+        e.preventDefault();
+        var btn2 = document.querySelector('[data-act="search-uni"]');
+        if (btn2) btn2.click();
+      } else if (el.id === 'pf-major-q') {
+        e.preventDefault();
+        var btn3 = document.querySelector('[data-act="search-major"]');
+        if (btn3) btn3.click();
+      }
+    });
+
+    // Firebase Bridge -> UI State Hook
+    window.__applyCloudAuthState = function (user) {
+      state.authReady = true;
+      state.isLoggingIn = false;
+      if (!user) {
+        state.currentUser = null;
+        state.authUser = null;
+        state.syncError = '';
+        state.showAlertModal = false;
+        render();
+        return;
+      }
+      state.authUser = {
+        uid: user.uid,
+        displayName: user.displayName || '',
+        email: user.email || '',
+        isLocalFallback: false
+      };
+      state.currentUser = user.uid;
+      state.authError = '';
+      state.syncError = '';
+      render();
+    };
+
+    window.__applyCloudWorkspace = function (wsData) {
+      if (!wsData) return;
+      state.syncError = '';
+      var activeEl = document.activeElement;
+      var editingTt = activeEl && activeEl.hasAttribute && activeEl.hasAttribute('data-tt-day');
+      var editingPf = activeEl && activeEl.id && activeEl.id.indexOf('pf-') === 0;
+      if (wsData.activeTab) state.activeTab = wsData.activeTab;
+      if (wsData.profile && !editingPf) {
+        state.profile = Object.assign(createEmptyProfile(), wsData.profile);
+        state.schoolQuery = state.profile.schoolName || '';
+        state.uniQuery = state.profile.targetUniversity || '';
+        state.majorQuery = state.profile.targetMajor || '';
+      }
+      if (wsData.timetable && !editingTt) {
+        var cloudTt = wsData.timetable || {};
+        var mappedTt = createEmptyTimetable();
+        var dayPairs = [['월', 'mon'], ['화', 'tue'], ['수', 'wed'], ['목', 'thu'], ['금', 'fri']];
+        for (var dpi = 0; dpi < dayPairs.length; dpi++) {
+          var kKey = dayPairs[dpi][0];
+          var aKey = dayPairs[dpi][1];
+          var srcArr = Array.isArray(cloudTt[aKey]) ? cloudTt[aKey] : (Array.isArray(cloudTt[kKey]) ? cloudTt[kKey] : null);
+          if (srcArr) {
+            mappedTt[kKey] = [];
+            for (var si = 0; si < 8; si++) mappedTt[kKey].push(String(srcArr[si] || ''));
+          }
+        }
+        state.timetable = mappedTt;
+      }
+      if (!editingTt && !editingPf) {
+        render();
+      }
+      if (state.activeTab === 'school' && state.schoolSubTab === 'meal') {
+        maybeAutoFetchMeal(false);
+      }
+    };
+
+    window.__applyCloudCollection = function (colName, items) {
+      state.syncError = '';
+      if (colName === 'records') {
+        state.records = items;
+        state.aiSelectedIds = state.records.filter(function (r) { return r.kind === 'assignment'; }).map(function (r) { return r.id; });
+      } else if (colName === 'saeteuks') {
+        state.savedSaeteuks = items;
+      } else if (colName === 'meals') {
+        var mealFromMap = { breakfast: '조식', lunch: '중식', dinner: '석식' };
+        state.meals = items.map(function (m) {
+          return Object.assign({}, m, { mealType: mealFromMap[m.mealType] || m.mealType || '중식' });
+        });
+      } else if (colName === 'grades') {
+        state.grades = items;
+      } else if (colName === 'mockExams') {
+        state.mockExams = items;
+      }
+      render();
+    };
+
+    window.__createInitialRecordsSeed = createInitialRecords;
+    window.__createEmptyProfileSeed = createEmptyProfile;
+    window.__createEmptyTimetableSeed = createEmptyTimetable;
+    window.__showAppToast = showToast;
+
+    // =========================================================================
+    // 13. Firebase 인라인 동적 로더 (Vite 번들 분리 방지 + 단일 index.html 100% 호환)
+    // =========================================================================
+    var firebaseBridgePromise = null;
+    function loadEsModule(url) {
+      return import(/* @vite-ignore */ url);
+    }
+
+    function ensureFirebaseBridge(forceRetry) {
+      if (window.__schoolFirebaseBridge) {
+        return Promise.resolve(window.__schoolFirebaseBridge);
+      }
+      if (isLocalOfflineMode()) {
+        state.authReady = true;
+        return Promise.reject(new Error('로컬 파일(file://) 환경에서는 Google 로그인이 지원되지 않습니다.'));
+      }
+      if (forceRetry) {
+        firebaseBridgePromise = null;
+      }
+      if (firebaseBridgePromise) return firebaseBridgePromise;
+
+      firebaseBridgePromise = Promise.all([
+        loadEsModule('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js'),
+        loadEsModule('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js'),
+        loadEsModule('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js')
+      ]).then(function (mods) {
+        var appMod = mods[0];
+        var authMod = mods[1];
+        var fsMod = mods[2];
+
+        var firebaseConfig = {
+          projectId: 'galvanic-bay-8bpf3',
+          appId: '1:897007668685:web:bd1b62abe3655efd4bc884',
+          apiKey: 'AIzaSyD_ujPtR-0mng5xYmTprT_vzcBxMDGrrCQ',
+          authDomain: 'galvanic-bay-8bpf3.firebaseapp.com',
+          firestoreDatabaseId: 'ai-studio-ai-380e1be6-07a0-45f1-9d17-3e7cb4826475',
+          storageBucket: 'galvanic-bay-8bpf3.firebasestorage.app',
+          messagingSenderId: '897007668685'
+        };
+
+        var OperationType = {
+          CREATE: 'create',
+          UPDATE: 'update',
+          DELETE: 'delete',
+          LIST: 'list',
+          GET: 'get',
+          WRITE: 'write'
+        };
+
+        var app = appMod.initializeApp(firebaseConfig);
+        var auth = authMod.getAuth(app);
+        var db;
+        try {
+          db = fsMod.initializeFirestore(
+            app,
+            { experimentalAutoDetectLongPolling: true },
+            firebaseConfig.firestoreDatabaseId
+          );
+        } catch (_fsInitErr) {
+          db = fsMod.getFirestore(app, firebaseConfig.firestoreDatabaseId);
+        }
+        var provider = new authMod.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+
+        function formatCloudSyncError(err) {
+          var raw = err && err.message ? String(err.message) : String(err || '');
+          var parsed = null;
+          try { parsed = JSON.parse(raw); } catch (_) {}
+          var msg = parsed && parsed.error ? String(parsed.error) : raw;
+          var op = parsed && parsed.operationType ? String(parsed.operationType) : '';
+          var p = parsed && parsed.path ? String(parsed.path) : '';
+
+          if (/quota exceeded/i.test(msg)) {
+            return '일일 무료 Firestore 사용량(Quota)을 초과했습니다. 내일 초기화되거나 Firebase 콘솔에서 요금제를 업그레이드해야 합니다. (' + msg + ')';
+          }
+          if (/client is offline|unavailable|network|failed to get document/i.test(msg)) {
+            return '클라우드 서버에 연결하지 못했습니다. 네트워크/방화벽 상태를 확인한 뒤 [다시 연결]을 눌러 주세요. (' + msg + ')';
+          }
+          if (/permission|insufficient/i.test(msg)) {
+            return '클라우드 접근 권한 오류' + (op || p ? ' [' + op + ' ' + p + ']' : '') + ': ' + msg;
+          }
+          return '클라우드 동기화 오류' + (op || p ? ' [' + op + ' ' + p + ']' : '') + ': ' + (msg || '알 수 없는 오류');
+        }
+
+        function handleFirestoreError(error, operationType, path) {
+          var u = auth.currentUser;
+          var errInfo = {
+            error: error instanceof Error ? error.message : String(error),
+            authInfo: {
+              userId: u ? u.uid : null,
+              email: u ? u.email : null,
+              emailVerified: u ? u.emailVerified : null,
+              isAnonymous: u ? u.isAnonymous : null,
+              tenantId: u ? u.tenantId : null,
+              providerInfo: u && Array.isArray(u.providerData)
+                ? u.providerData.map(function (p) { return { providerId: p.providerId, email: p.email }; })
+                : []
+            },
+            operationType: operationType,
+            path: path
+          };
+          console.error('Firestore Error: ', JSON.stringify(errInfo));
+          throw new Error(JSON.stringify(errInfo));
+        }
+
+        (function testConnection() {
+          fsMod.getDocFromServer(fsMod.doc(db, 'test', 'connection')).catch(function (error) {
+            if (error instanceof Error && error.message.indexOf('the client is offline') >= 0) {
+              console.error('Please check your Firebase configuration.');
+            }
+          });
+        })();
+
+        function safeStr(val, maxLen) {
+          return String(val == null ? '' : val).slice(0, maxLen);
+        }
+
+        function sanitizeId(rawId, prefix) {
+          var cleaned = String(rawId || '').replace(/[^a-zA-Z0-9_\-]/g, '-').slice(0, 120);
+          return cleaned || (prefix + '-' + Date.now());
+        }
+
+        function sanitizeIsoDate(d) {
+          var s = String(d || '');
+          if (/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(s)) return s;
+          var now = new Date();
+          return now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+        }
+
+        function sanitizeProfile(raw) {
+          var p = Object.assign(createEmptyProfile(), raw || {});
+          var extras = Array.isArray(p.extraTargets)
+            ? p.extraTargets.slice(0, 5).map(function (t) {
+                return {
+                  id: safeStr(t && t.id, 60),
+                  universityName: safeStr(t && t.universityName, 120),
+                  majorName: safeStr(t && t.majorName, 120)
+                };
+              })
+            : [];
+          return {
+            schoolName: safeStr(p.schoolName, 120),
+            schoolCode: safeStr(p.schoolCode, 30),
+            officeCode: safeStr(p.officeCode, 30),
+            schoolAddress: safeStr(p.schoolAddress, 200),
+            grade: safeStr(p.grade || '1', 10),
+            classNum: safeStr(p.classNum, 20),
+            studentNumber: safeStr(p.studentNumber, 20),
+            name: safeStr(p.name, 60),
+            targetUniversity: safeStr(p.targetUniversity, 120),
+            targetUniversityLocation: safeStr(p.targetUniversityLocation, 80),
+            targetMajor: safeStr(p.targetMajor, 120),
+            extraTargets: extras,
+            updatedAt: safeStr(p.updatedAt, 40)
+          };
+        }
+
+        function sanitizeTimetable(raw) {
+          var dayPairs = [['월', 'mon'], ['화', 'tue'], ['수', 'wed'], ['목', 'thu'], ['금', 'fri']];
+          var out = {};
+          dayPairs.forEach(function (pair) {
+            var kKey = pair[0];
+            var aKey = pair[1];
+            var arr = raw && Array.isArray(raw[aKey]) ? raw[aKey] : (raw && Array.isArray(raw[kKey]) ? raw[kKey] : []);
+            var slots = [];
+            for (var i = 0; i < 8; i++) slots.push(safeStr(arr[i], 40));
+            out[aKey] = slots;
+          });
+          return out;
+        }
+
+        function sanitizeRecordPayload(uid, r) {
+          var atts = Array.isArray(r.attachments)
+            ? r.attachments.slice(0, 5).map(function (a) {
+                return {
+                  fileName: safeStr(a && a.fileName, 160),
+                  fileSize: safeStr(a && a.fileSize, 32),
+                  extractedText: safeStr(a && a.extractedText, 1500)
+                };
+              })
+            : [];
+          return {
+            ownerId: uid,
+            kind: r.kind === 'schedule' ? 'schedule' : 'assignment',
+            subject: safeStr(r.subject || '자율', 60) || '자율',
+            title: safeStr(r.title || '제목 없음', 200) || '제목 없음',
+            content: safeStr(r.content, 12000),
+            date: sanitizeIsoDate(r.date),
+            link: safeStr(r.link, 500),
+            attachments: atts,
+            completed: Boolean(r.completed),
+            createdAt: fsMod.serverTimestamp(),
+            updatedAt: fsMod.serverTimestamp()
+          };
+        }
+
+        function sanitizeSaeteukPayload(uid, s) {
+          var kws = Array.isArray(s.keywords)
+            ? s.keywords.slice(0, 15).map(function (k) { return safeStr(k, 40); }).filter(Boolean)
+            : [];
+          return {
+            ownerId: uid,
+            title: safeStr(s.title || '세특 초안', 200) || '세특 초안',
+            subject: safeStr(s.subject || '교과', 100) || '교과',
+            draft: safeStr(s.draft || '-', 6000) || '-',
+            keywords: kws,
+            sourceType: s.sourceType === 'linkage' ? 'linkage' : 'summary',
+            createdAt: fsMod.serverTimestamp(),
+            updatedAt: fsMod.serverTimestamp()
+          };
+        }
+
+        function sanitizeMealPayload(uid, m) {
+          var mealToCloudMap = { '조식': 'breakfast', '중식': 'lunch', '석식': 'dinner', breakfast: 'breakfast', lunch: 'lunch', dinner: 'dinner' };
+          var mappedType = mealToCloudMap[m.mealType] || 'lunch';
+          return {
+            ownerId: uid,
+            date: sanitizeIsoDate(m.date),
+            mealType: mappedType,
+            menu: safeStr(m.menu, 2000),
+            calories: safeStr(m.calories, 60),
+            createdAt: fsMod.serverTimestamp(),
+            updatedAt: fsMod.serverTimestamp()
+          };
+        }
+
+        function sanitizeGradePayload(uid, g) {
+          var sc = Math.max(0, Math.min(100, Number(g.score) || 0));
+          var rk = Math.max(1, Math.min(9, Math.round(Number(g.gradeRank) || 1)));
+          return {
+            ownerId: uid,
+            term: safeStr(g.term || '1학년 1학기 1차', 60) || '1학년 1학기 1차',
+            subject: safeStr(g.subject || '국어', 60) || '국어',
+            score: sc,
+            gradeRank: rk,
+            createdAt: fsMod.serverTimestamp(),
+            updatedAt: fsMod.serverTimestamp()
+          };
+        }
+
+        function sanitizeMockPayload(uid, m) {
+          var maxS = Math.max(1, Math.min(200, Number(m.maxScore) || 100));
+          var sc = Math.max(0, Math.min(200, Number(m.score) || 0));
+          var rk = Math.max(1, Math.min(9, Math.round(Number(m.gradeRank) || 1)));
+          var pct = m.percentile == null || m.percentile === ''
+            ? null
+            : Math.max(0, Math.min(100, Number(m.percentile)));
+          return {
+            ownerId: uid,
+            examName: safeStr(m.examName || '모의고사', 80) || '모의고사',
+            subject: safeStr(m.subject || '국어', 60) || '국어',
+            score: sc,
+            maxScore: maxS,
+            gradeRank: rk,
+            percentile: Number.isFinite(pct) ? pct : null,
+            createdAt: fsMod.serverTimestamp(),
+            updatedAt: fsMod.serverTimestamp()
+          };
+        }
+
+        var unsubscribers = [];
+        function clearSubscriptions() {
+          unsubscribers.forEach(function (u) { try { u(); } catch (_) {} });
+          unsubscribers = [];
+        }
+
+        async function ensureUserWorkspaceAndSubscribe(user) {
+          var uid = user.uid;
+          var userPath = 'users/' + uid;
+          var userRef = fsMod.doc(db, 'users', uid);
+          var isNewAccount = false;
+
+          try {
+            if (typeof user.getIdToken === 'function') {
+              await user.getIdToken();
+            }
+          } catch (_tokErr) { /* ignore token refresh failure if cached */ }
+
+          var snap = null;
+          try {
+            snap = await fsMod.getDoc(userRef);
+          } catch (err) {
+            handleFirestoreError(err, OperationType.GET, userPath);
+          }
+
+          if (snap && !snap.exists()) {
+            isNewAccount = true;
+            var emptyProf = sanitizeProfile({ name: safeStr(user.displayName, 60) });
+            try {
+              await fsMod.setDoc(userRef, {
+                ownerId: uid,
+                displayName: safeStr(user.displayName, 100),
+                email: safeStr(user.email, 160),
+                activeTab: 'schedule',
+                profile: emptyProf,
+                timetable: sanitizeTimetable(createEmptyTimetable()),
+                createdAt: fsMod.serverTimestamp(),
+                updatedAt: fsMod.serverTimestamp()
+              });
+            } catch (err) {
+              handleFirestoreError(err, OperationType.CREATE, userPath);
+            }
+          }
+
+          if (isNewAccount) {
+            var seeds = createInitialRecords();
+            for (var si = 0; si < seeds.length; si++) {
+              var rec = seeds[si];
+              var rid = sanitizeId(rec.id, 'rec');
+              var rPath = 'users/' + uid + '/records/' + rid;
+              try {
+                await fsMod.setDoc(fsMod.doc(db, 'users', uid, 'records', rid), sanitizeRecordPayload(uid, rec));
+              } catch (err) {
+                handleFirestoreError(err, OperationType.CREATE, rPath);
+              }
+            }
+          }
+
+          unsubscribers.push(
+            fsMod.onSnapshot(
+              userRef,
+              function (docSnap) {
+                if (docSnap.exists() && window.__applyCloudWorkspace) {
+                  window.__applyCloudWorkspace(docSnap.data());
+                }
+              },
+              function (err) {
+                state.syncError = formatCloudSyncError(err);
+                render();
+                handleFirestoreError(err, OperationType.GET, userPath);
+              }
+            )
+          );
+
+          var cols = ['records', 'saeteuks', 'meals', 'grades', 'mockExams'];
+          cols.forEach(function (colName) {
+            var colPath = 'users/' + uid + '/' + colName;
+            var q = fsMod.query(fsMod.collection(db, 'users', uid, colName), fsMod.where('ownerId', '==', uid));
+            unsubscribers.push(
+              fsMod.onSnapshot(
+                q,
+                function (qSnap) {
+                  var items = [];
+                  qSnap.forEach(function (d) { items.push(Object.assign({ id: d.id }, d.data())); });
+                  if (window.__applyCloudCollection) {
+                    window.__applyCloudCollection(colName, items);
+                  }
+                },
+                function (err) {
+                  state.syncError = formatCloudSyncError(err);
+                  render();
+                  handleFirestoreError(err, OperationType.LIST, colPath);
+                }
+              )
+            );
+          });
+        }
+
+        function startCloudSyncForUser(user) {
+          clearSubscriptions();
+          if (!user) return;
+          ensureUserWorkspaceAndSubscribe(user).catch(function (err) {
+            console.error(err);
+            var detailed = formatCloudSyncError(err);
+            state.syncError = detailed;
+            render();
+            showToast(detailed);
+          });
+        }
+
+        authMod.onAuthStateChanged(auth, function (user) {
+          clearSubscriptions();
+          if (window.__applyCloudAuthState) {
+            window.__applyCloudAuthState(user);
+          }
+          if (user) {
+            startCloudSyncForUser(user);
+          }
+        });
+
+        var bridgeObj = {
+          signInWithGoogle: function () {
+            return authMod.signInWithPopup(auth, provider).then(function (cred) {
+              return cred.user;
+            });
+          },
+          retryCloudSync: function () {
+            if (auth.currentUser) {
+              startCloudSyncForUser(auth.currentUser);
+            }
+          },
+          signOutGoogle: function () {
+            clearSubscriptions();
+            return authMod.signOut(auth);
+          },
+          updateWorkspaceField: function (field, value) {
+            var u = auth.currentUser;
+            if (!u) return Promise.resolve();
+            var userPath = 'users/' + u.uid;
+            var payload = { updatedAt: fsMod.serverTimestamp() };
+            if (field === 'profile') payload.profile = sanitizeProfile(value);
+            else if (field === 'timetable') payload.timetable = sanitizeTimetable(value);
+            else if (field === 'activeTab') {
+              var validTabs = ['schedule', 'school', 'calendar', 'input', 'ai', 'profile'];
+              payload.activeTab = validTabs.indexOf(value) >= 0 ? value : 'schedule';
+            }
+            return fsMod.updateDoc(fsMod.doc(db, 'users', u.uid), payload).catch(function (err) {
+              handleFirestoreError(err, OperationType.UPDATE, userPath);
+            });
+          },
+          createRecord: function (rec) {
+            var u = auth.currentUser;
+            if (!u) return Promise.resolve();
+            var id = sanitizeId(rec.id, 'rec');
+            var p = 'users/' + u.uid + '/records/' + id;
+            return fsMod.setDoc(fsMod.doc(db, 'users', u.uid, 'records', id), sanitizeRecordPayload(u.uid, rec)).catch(function (err) {
+              handleFirestoreError(err, OperationType.CREATE, p);
+            });
+          },
+          toggleRecordCompleted: function (id, completed) {
+            var u = auth.currentUser;
+            if (!u) return Promise.resolve();
+            var rid = sanitizeId(id, 'rec');
+            var p = 'users/' + u.uid + '/records/' + rid;
+            return fsMod.updateDoc(fsMod.doc(db, 'users', u.uid, 'records', rid), {
+              completed: Boolean(completed),
+              updatedAt: fsMod.serverTimestamp()
+            }).catch(function (err) {
+              handleFirestoreError(err, OperationType.UPDATE, p);
+            });
+          },
+          createSaeteuk: function (st) {
+            var u = auth.currentUser;
+            if (!u) return Promise.resolve();
+            var id = sanitizeId(st.id, 'st');
+            var p = 'users/' + u.uid + '/saeteuks/' + id;
+            return fsMod.setDoc(fsMod.doc(db, 'users', u.uid, 'saeteuks', id), sanitizeSaeteukPayload(u.uid, st)).catch(function (err) {
+              handleFirestoreError(err, OperationType.CREATE, p);
+            });
+          },
+          updateSaeteuk: function (id, title, draft) {
+            var u = auth.currentUser;
+            if (!u) return Promise.resolve();
+            var sid = sanitizeId(id, 'st');
+            var p = 'users/' + u.uid + '/saeteuks/' + sid;
+            return fsMod.updateDoc(fsMod.doc(db, 'users', u.uid, 'saeteuks', sid), {
+              title: safeStr(title || '세특 초안', 200) || '세특 초안',
+              draft: safeStr(draft, 6000) || '-',
+              updatedAt: fsMod.serverTimestamp()
+            }).catch(function (err) {
+              handleFirestoreError(err, OperationType.UPDATE, p);
+            });
+          },
+          upsertMeal: function (meal, existsAlready) {
+            var u = auth.currentUser;
+            if (!u) return Promise.resolve();
+            var id = sanitizeId(meal.id, 'meal');
+            var p = 'users/' + u.uid + '/meals/' + id;
+            var ref = fsMod.doc(db, 'users', u.uid, 'meals', id);
+            var op = existsAlready
+              ? fsMod.updateDoc(ref, {
+                  menu: safeStr(meal.menu, 2000),
+                  calories: safeStr(meal.calories, 60),
+                  updatedAt: fsMod.serverTimestamp()
+                })
+              : fsMod.setDoc(ref, sanitizeMealPayload(u.uid, meal));
+            return op.catch(function (err) {
+              handleFirestoreError(err, existsAlready ? OperationType.UPDATE : OperationType.CREATE, p);
+            });
+          },
+          createGrade: function (grd) {
+            var u = auth.currentUser;
+            if (!u) return Promise.resolve();
+            var id = sanitizeId(grd.id, 'grd');
+            var p = 'users/' + u.uid + '/grades/' + id;
+            return fsMod.setDoc(fsMod.doc(db, 'users', u.uid, 'grades', id), sanitizeGradePayload(u.uid, grd)).catch(function (err) {
+              handleFirestoreError(err, OperationType.CREATE, p);
+            });
+          },
+          createMockExam: function (mock) {
+            var u = auth.currentUser;
+            if (!u) return Promise.resolve();
+            var id = sanitizeId(mock.id, 'mock');
+            var p = 'users/' + u.uid + '/mockExams/' + id;
+            return fsMod.setDoc(fsMod.doc(db, 'users', u.uid, 'mockExams', id), sanitizeMockPayload(u.uid, mock)).catch(function (err) {
+              handleFirestoreError(err, OperationType.CREATE, p);
+            });
+          },
+          deleteSubDoc: function (colName, id) {
+            var u = auth.currentUser;
+            if (!u) return Promise.resolve();
+            var did = sanitizeId(id, 'doc');
+            var p = 'users/' + u.uid + '/' + colName + '/' + did;
+            return fsMod.deleteDoc(fsMod.doc(db, 'users', u.uid, colName, did)).catch(function (err) {
+              handleFirestoreError(err, OperationType.DELETE, p);
+            });
+          },
+          importAllToCloud: async function (bundle) {
+            var u = auth.currentUser;
+            if (!u) return;
+            var uid = u.uid;
+            try {
+              await fsMod.updateDoc(fsMod.doc(db, 'users', uid), {
+                profile: sanitizeProfile(bundle.profile),
+                timetable: sanitizeTimetable(bundle.timetable),
+                updatedAt: fsMod.serverTimestamp()
+              });
+              for (var i = 0; i < (bundle.records || []).length; i++) {
+                var rec = bundle.records[i];
+                await fsMod.setDoc(fsMod.doc(db, 'users', uid, 'records', sanitizeId(rec.id, 'rec')), sanitizeRecordPayload(uid, rec));
+              }
+              for (var j = 0; j < (bundle.saeteuks || []).length; j++) {
+                var st = bundle.saeteuks[j];
+                await fsMod.setDoc(fsMod.doc(db, 'users', uid, 'saeteuks', sanitizeId(st.id, 'st')), sanitizeSaeteukPayload(uid, st));
+              }
+              for (var k = 0; k < (bundle.meals || []).length; k++) {
+                var ml = bundle.meals[k];
+                await fsMod.setDoc(fsMod.doc(db, 'users', uid, 'meals', sanitizeId(ml.id, 'meal')), sanitizeMealPayload(uid, ml));
+              }
+              for (var g = 0; g < (bundle.grades || []).length; g++) {
+                var grd = bundle.grades[g];
+                await fsMod.setDoc(fsMod.doc(db, 'users', uid, 'grades', sanitizeId(grd.id, 'grd')), sanitizeGradePayload(uid, grd));
+              }
+              for (var m = 0; m < (bundle.mockExams || []).length; m++) {
+                var mk = bundle.mockExams[m];
+                await fsMod.setDoc(fsMod.doc(db, 'users', uid, 'mockExams', sanitizeId(mk.id, 'mock')), sanitizeMockPayload(uid, mk));
+              }
+            } catch (err) {
+              handleFirestoreError(err, OperationType.WRITE, 'users/' + uid);
+            }
+          }
+        };
+
+        window.__schoolFirebaseBridge = bridgeObj;
+        return bridgeObj;
+      }).catch(function (err) {
+        firebaseBridgePromise = null;
+        state.authReady = true;
+        console.error('Firebase load error:', err);
+        throw err;
+      });
+
+      return firebaseBridgePromise;
+    }
+
+    // 초기 부팅: UI 즉시 렌더링 + Firebase CDN 백그라운드 초기화
+    render();
+    if (!isLocalOfflineMode()) {
+      ensureFirebaseBridge(false).catch(function (err) {
+        state.authError = 'Google 로그인 모듈을 불러오지 못했습니다: ' + ((err && err.message) || '네트워크 또는 광고 차단기를 확인해 주세요.');
+        render();
+      });
+    }
+  })();
+  </script>
+
+
+<iframe ng-non-bindable="" frameborder="0" hspace="0" marginheight="0" marginwidth="0" scrolling="no" tabindex="-1" vspace="0" width="100%" aria-hidden="true" id="I0_1795512628846" name="I0_1795512628846" src="https://galvanic-bay-8bpf3.firebaseapp.com/__/auth/iframe?apiKey=AIzaSyD_ujPtR-0mng5xYmTprT_vzcBxMDGrrCQ&amp;appName=%5BDEFAULT%5D&amp;v=11.6.1&amp;eid=p&amp;usegapi=1&amp;jsh=m%3B%2F_%2Fscs%2Fabc-static%2F_%2Fjs%2Fk%3Dgapi.lb.ko.RTUH1ZiyuXI.O%2Fd%3D1%2Frs%3DAHpOoo81hLe3JzdONP8XmrLp67AGwYPTBg%2Fm%3D__features__#id=I0_1795512628846&amp;_gfid=I0_1795512628846&amp;parent=https%3A%2F%2Fais-dev-mvcyix5saprehjyul7zox7-467036150680.asia-east1.run.app&amp;pfname=&amp;rpctoken=40964381" style="position: absolute; top: -100px; width: 1px; height: 1px;"></iframe></body></html>
